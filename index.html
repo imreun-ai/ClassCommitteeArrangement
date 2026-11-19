@@ -1,0 +1,584 @@
+<title>ប្រព័ន្ធ គគថ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Moul&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: sticky header + tab bar, one column workspace; ink-blue document feel with saffron accent */
+:root{
+  --bg:#f4f5f8; --surface:#ffffff; --fg:#1b2238; --muted:#5d6580; --line:#dde0ea;
+  --ink:#1d3a78; --ink-soft:#e5ebf8; --gold:#c98a12; --gold-soft:#fbf0d6;
+  --ok:#1f7a4d; --ok-soft:#dcf1e5; --warn:#b3421f; --warn-soft:#fbe6df;
+  --head:'Moul','Noto Sans Khmer',serif; --body:'Noto Sans Khmer',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1424; --surface:#182036; --fg:#e8ebf5; --muted:#9aa3c0; --line:#2a3454;
+  --ink:#8fb0ff; --ink-soft:#223058; --gold:#f0b84a; --gold-soft:#3a2f14;
+  --ok:#5fd29a; --ok-soft:#173a2b; --warn:#ff9876; --warn-soft:#432018; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1424; --surface:#182036; --fg:#e8ebf5; --muted:#9aa3c0; --line:#2a3454;
+  --ink:#8fb0ff; --ink-soft:#223058; --gold:#f0b84a; --gold-soft:#3a2f14;
+  --ok:#5fd29a; --ok-soft:#173a2b; --warn:#ff9876; --warn-soft:#432018; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.7;margin:0;
+  padding-block:0 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--ink)}
+.wrap{max-width:1000px;margin:0 auto}
+header{background:var(--ink);color:#fff;margin:0 calc(-1*max(16px,env(safe-area-inset-left,0px)));padding:18px max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px))}
+:root[data-theme="dark"] header,:root:not([data-theme="light"]) header{}
+header .in{max-width:1000px;margin:0 auto}
+.hcls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:6px}.hcls label{display:flex;gap:6px;align-items:center;color:inherit;font-size:14px}
+.hcls select{width:auto;min-width:130px;background:#fff;color:#1b2238;border-color:transparent}.fsb{font-size:12px;opacity:.85}.fsb[data-st=on]{color:#9be8c0;opacity:1}.fsb[data-st=error]{color:#ffb4a0;opacity:1}
+.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{position:relative;display:block;font-size:14px;color:var(--fg)}.chip input{position:absolute;opacity:0;inset:0;width:100%;height:100%;cursor:pointer;margin:0}
+.chip span{display:block;min-width:46px;text-align:center;padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.chip input:checked+span{background:var(--ink);color:#fff;border-color:var(--ink)}.chip input:focus-visible+span{outline:2px solid var(--gold);outline-offset:2px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chip input:checked+span{color:#0f1424}}:root[data-theme="dark"] .chip input:checked+span{color:#0f1424}
+.cls-t td,.cls-t th{text-align:left}.cls-t{min-width:560px}pre.rules{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px;overflow-x:auto;font-size:12px;line-height:1.5;margin:6px 0}
+.hd{display:flex;gap:14px;align-items:center}.hd img{width:64px;height:64px;object-fit:contain;background:#fff;border-radius:50%;padding:4px}
+header small{opacity:.85;display:block}
+header h1{font-family:var(--head);font-weight:400;font-size:20px;margin:6px 0 2px;line-height:1.6;text-wrap:balance}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) header{background:#16213f;color:#e8ebf5}:root:not([data-theme="light"]) body::before{background:#16213f}}
+:root[data-theme="dark"] header{background:#16213f;color:#e8ebf5}
+:root[data-theme="dark"] body::before{background:#16213f}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);margin:0 calc(-1*max(16px,env(safe-area-inset-left,0px)));padding:0 max(16px,env(safe-area-inset-left,0px))}
+nav .in{max-width:1000px;margin:0 auto;display:flex;gap:4px;overflow-x:auto}
+nav a{padding:11px 14px;text-decoration:none;color:var(--muted);font-weight:600;white-space:nowrap;border-bottom:3px solid transparent}
+nav a[aria-current="page"]{color:var(--ink);border-color:var(--gold)}
+nav a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+main{padding-top:22px;display:grid;gap:18px}
+h2{font-family:var(--head);font-weight:400;font-size:17px;margin:0;color:var(--ink);text-wrap:balance}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px;min-width:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.stat b{display:block;font-size:28px;line-height:1.3;color:var(--ink)}
+.stat span{color:var(--muted);font-size:13px}
+.bar{height:10px;background:var(--ink-soft);border-radius:5px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--gold)}
+button,.btn{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:7px 14px;border-radius:6px;cursor:pointer}
+button.pri{background:var(--ink);color:#fff;border-color:var(--ink)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.pri{color:#0f1424}}
+:root[data-theme="dark"] button.pri{color:#0f1424}
+button.dng{color:var(--warn);border-color:var(--warn)}
+button.sm{padding:3px 10px;font-size:13px}
+label{display:grid;gap:3px;font-size:13px;color:var(--muted);font-weight:600;min-width:0}
+input,select,textarea{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 10px;width:100%;min-width:0}
+textarea{min-height:84px;resize:vertical}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px}
+.form .full{grid-column:1/-1}
+.members{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.mem{border:1px solid var(--line);border-radius:8px;padding:14px;background:var(--surface);display:grid;gap:6px;align-content:start;min-width:0}
+.ph{width:84px;height:108px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
+.mem h3{margin:0;font-size:16px}
+.mem p{margin:0;font-size:14px}
+.tag{display:inline-block;padding:1px 10px;border-radius:99px;font-size:12px;font-weight:700;background:var(--ink-soft);color:var(--ink)}
+.tag.g{background:var(--gold-soft);color:var(--gold)}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:720px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center;font-size:14px}
+th{background:var(--ink-soft);color:var(--ink)}
+td.act{text-align:left;min-width:260px}
+.cell{width:38px;height:34px;padding:0;font-size:16px;border-radius:6px}
+.cell.p{background:var(--gold-soft);color:var(--gold);border-color:var(--gold)}
+.cell.d{background:var(--ok-soft);color:var(--ok);border-color:var(--ok)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.meet{border-top:1px solid var(--line);padding:14px 0;display:grid;gap:4px}
+.meet:first-child{border-top:0}
+.meet p{margin:0;white-space:pre-wrap}
+.empty{color:var(--muted);text-align:center;padding:24px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:8px 18px;border-radius:6px;font-weight:600;z-index:20}
+.note{font-size:13px;color:var(--muted);margin:6px 0 0}
+
+.bookbar{display:grid;gap:4px}
+.pages{display:grid;gap:18px;justify-items:center}
+.pg{background:#fff;color:#111;width:100%;max-width:794px;aspect-ratio:210/297;padding:6%;border:1px solid var(--line);overflow:hidden;font-size:clamp(9px,1.9vw,14px);line-height:1.8;display:flex;flex-direction:column}
+.pg.cover{padding:3%}
+.cb{border:2px solid #111;flex:1;padding:4%;display:flex;flex-direction:column;align-items:center;text-align:center}
+.moul{font-family:var(--head)}
+.kg{text-align:center}.kg .moul{font-size:1.2em}.orn{font-size:1.5em;line-height:1.2}
+.org{display:flex;flex-direction:column;align-items:flex-start;width:100%;margin-top:5%;text-align:left;gap:4px}.org img{width:10.5%;margin-left:9%}.orgt{font-size:1.1em;line-height:1.75}
+.orn2{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:6px}.orn2 i{width:7%;height:1px;background:#888}.orn2 b{font-size:.7em;font-weight:400;color:#555}
+.sm{font-size:.9em}.c{text-align:center}
+.cb hr{width:100%;border:0;border-top:1px solid #111;margin:3% 0}
+.ttl{color:#00b050;font-size:1.25em;margin:.1em 0;line-height:1.9}
+.cimg{width:50%;margin:auto 0;object-fit:cover;aspect-ratio:1}
+.yr{color:#f00;font-size:1.25em;margin-top:auto;padding-bottom:4%}
+.blue{color:#1666c1;font-size:1.05em;margin:12px 0}
+.chart{display:flex;flex-direction:column;align-items:center;flex:1}
+.lvl{display:flex;gap:1.5%;justify-content:center;width:100%}
+.vl{width:2px;height:3%;background:#1d3a78;min-height:10px}
+.ob{background:#0b2a6f;color:#fff;border-radius:3px;padding:5px;text-align:center;flex:1;max-width:19%;display:flex;flex-direction:column;gap:1px;font-size:.75em;line-height:1.5}
+.lvl:not(:last-child) .ob{max-width:24%}
+.ob img,.noimg{width:100%;aspect-ratio:3/4;object-fit:cover;background:#fff;border-radius:2px}
+.ob small{opacity:.85}
+.pur{color:#7030a0}
+.para{text-indent:2em;margin:0 0 .6em;text-align:justify}
+.bm{margin-bottom:.7em;break-inside:avoid;text-align:justify;font-size:.85em;line-height:1.75}.bm div:nth-child(n+2){padding-left:2.2em}
+.plt{color:#6a2c91;margin:0 0 12px}
+.pt{min-width:0;font-size:.85em}.pt th,.pt td{border:1px solid #111;color:inherit;background:#fff;padding:3px 4px}
+.pt td.act{min-width:0;text-align:left}
+.pt td.lb{background:#9cc2e5}.pt td.db{background:#00b0f0}
+.sign{margin-top:22px;font-size:.95em}.sg{display:grid;grid-template-columns:45% 45%;column-gap:0;padding-right:10%}.bd{font-family:var(--head);font-size:.95em}.nm{margin-top:4.5em}.sg .c{white-space:nowrap}
+.pg.pgx{width:794px;max-width:none;height:1123px;aspect-ratio:auto;border:0;padding:57px;font-size:16.5px;margin:0}.pg.cover.pgx{padding:30px}
+@page{size:A4;margin:0}
+@media print{
+  body{background:#fff;padding:0}body::before,header,nav,.bookbar,.toast{display:none!important}
+  .wrap{max-width:none}main{padding:0;gap:0}.pages{display:block}
+  .pg{width:210mm;max-width:none;height:297mm;aspect-ratio:auto;border:0;padding:15mm;margin:0;break-after:page;font-size:12.5pt}
+  .pg.cover{padding:8mm}.pg:last-child{break-after:auto}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+
+<header><div class="in hd"><img id="hLogo" alt="" hidden>
+  <div>
+  <small>ព្រះរាជាណាចក្រកម្ពុជា · ជាតិ សាសនា ព្រះមហាក្សត្រ</small>
+  <h1 id="hTitle">សៀវភៅគណៈគ្រប់គ្រងថ្នាក់រៀន (គគថ)</h1>
+  <small id="hSub"></small>
+  <div class="hcls"><label>ថ្នាក់៖ <select id="clsSel"></select></label><span id="fsBadge" class="fsb"></span></div>
+</div></div></header>
+<nav><div class="in" id="nav"></div></nav>
+<div class="wrap"><main id="app"></main></div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const IMG={"logo": "data:image/png;base64,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", "cover": "", "p1": "", "p2": "", "p3": "", "p4": "", "p5": "", "p6": "", "p7": ""};
+/* ប្រតិទិនខ្មែរ៖ បំប្លែងថ្ងៃគ្រិស្តសករាជ → ចន្ទគតិ និងសុរិយគតិ */
+const KH_MON=['មិគសិរ','បុស្ស','មាឃ','ផល្គុន','ចេត្រ','ពិសាខ','ជេស្ឋ','អាសាឍ','ស្រាពណ៍','ភទ្របទ','អស្សុជ','កត្តិក'];
+const KH_SOLAR=['មករា','កុម្ភៈ','មីនា','មេសា','ឧសភា','មិថុនា','កក្កដា','សីហា','កញ្ញា','តុលា','វិច្ឆិកា','ធ្នូ'];
+const KH_WD=['អាទិត្យ','ច័ន្ទ','អង្គារ','ពុធ','ព្រហស្បតិ៍','សុក្រ','សៅរ៍'];
+const KH_ANI=['ជូត','ឆ្លូវ','ខាល','ថោះ','រោង','ម្សាញ់','មមី','មមែ','វក','រកា','ច','កុរ'];
+const KH_SAK=['សំរឹទ្ធិស័ក','ឯកស័ក','ទោស័ក','ត្រីស័ក','ចត្វាស័ក','បញ្ចស័ក','ឆស័ក','សប្តស័ក','អដ្ឋស័ក','នព្វស័ក'];
+const khCal=(()=>{
+  const DAY=864e5,REF=286596e5;
+  const h=y=>Math.floor((292207*y+373)/800)+1, a=y=>(292207*y+373)%800, v=y=>(11*h(y)+650)%692;
+  const bd=y=>(h(y)+Math.floor((11*h(y)+650)/692))%30, regular=y=>(800-a(y))<=207;
+  const jais=y=>{const b0=bd(y),b1=bd(y+1);return b0>24||b0<6||(b0==24&&b1==6)||(b0==25&&b1==5)};
+  const prot=y=>{const n=regular(y);let r=n&&v(y)<127;if(!n){if(v(y)==137&&v(y+1)==0)r=false;else if(v(y)<138)r=true}
+    if(!r)r=jais(y-1)&&prot(y-1);return r};
+  const great=y=>prot(y)&&!jais(y);
+  const dIY=y=>jais(y)?384:great(y)?355:354;
+  const mL=y=>{const L=jais(y),n=12+(L?1:0),o=[];for(let i=0;i<n;i++){let j=i;if(L&&j>=8)j--;o.push(29+(j%2)+((j==6&&great(y))?1:0))}return o};
+  function lunar(Y,M,D){const t=Date.UTC(Y,M-1,D);let y=Y-638,L=0,s=1333,e=y;if(y<1333){s=y;e=1333}
+    for(let x=s;x<e;x++)L+=dIY(x);const dd=Math.abs(Math.round((t-REF)/DAY));let day=Math.abs(dd-L)+1;
+    const len=dIY(y);if(day>len){day-=len;y++}
+    let m=0;for(const l of mL(y)){if(day<=l)break;day-=l;m++}
+    return{day,m,leap:jais(y)}}
+  return{lunar}})();
+const kh_n=n=>String(n).replace(/\d/g,d=>'០១២៣៤៥៦៧៨៩'[d]);
+function khParseDate(s){const m=String(s).trim().match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);if(!m)return null;
+  const d=+m[1],mo=+m[2],y=+m[3];const t=new Date(Date.UTC(y,mo-1,d));if(t.getUTCFullYear()!=y||t.getUTCMonth()!=mo-1||t.getUTCDate()!=d||y<1950||y>2100)return null;return{y,m:mo,d}}
+const KH_SEQ=['ពិសាខ','ជេស្ឋ','អាសាឍ','ស្រាពណ៍','ភទ្របទ','អស្សុជ','កត្តិក','មិគសិរ','បុស្ស','មាឃ','ផល្គុន','ចេត្រ'];
+const _stc={};
+function khStarts(Y){ /* ថ្ងៃ ១កើត ទាំងអស់ពី ១ មករា ឆ្នាំមុន ដល់ ៣១ ធ្នូ ឆ្នាំនេះ */
+  if(_stc[Y])return _stc[Y];const o=[];
+  for(let t=Date.UTC(Y-1,0,1);t<=Date.UTC(Y+1,0,31);t+=864e5){const q=new Date(t);if(khCal.lunar(q.getUTCFullYear(),q.getUTCMonth()+1,q.getUTCDate()).day==1)o.push(t)}
+  return _stc[Y]=o}
+function khPisakh(Y){const st=khStarts(Y);return st.find(t=>t>=Date.UTC(Y,3,22)&&t<=Date.UTC(Y,4,20))}
+function khDates(Y,M,D,place){
+  const T=Date.UTC(Y,M-1,D),wd=KH_WD[new Date(T).getUTCDay()];
+  const r=khCal.lunar(Y,M,D),S=T-(r.day-1)*864e5;
+  const pY=khPisakh(Y);let P=(S>=pY)?pY:khPisakh(Y-1),Pn=(S>=pY)?khPisakh(Y+1):pY;
+  const st=khStarts(Y);
+  const between=st.filter(t=>t>=P&&t<Pn).length;   /* ១២ ឬ ១៣ ខែ */
+  const k=st.filter(t=>t>=P&&t<=S).length-1;
+  const seq=KH_SEQ.slice();if(between>=13)seq.splice(9,0,'បុស្ស ទី២');
+  const name=seq[k]||'';
+  const day=r.day<=15?kh_n(r.day)+'កើត':kh_n(r.day-15)+'រោច';
+  const BE=Y+543+(T>=pY+14*864e5?1:0);
+  const E=(M>4||(M==4&&D>=14))?Y:Y-1;
+  const lunarLine='ថ្ងៃ'+wd+' '+day+' ខែ'+name+' ឆ្នាំ'+KH_ANI[((E-4)%12+12)%12]+' '+KH_SAK[(E-638)%10]+' ព.ស.'+kh_n(BE);
+  const solarLine=(place||'កណ្តៀង')+', ថ្ងៃទី '+kh_n(D)+' ខែ '+KH_SOLAR[M-1]+' ឆ្នាំ'+kh_n(Y);
+  return{lunarLine,solarLine};
+}
+if(typeof module!=='undefined')module.exports={khDates,khParseDate};
+
+const KEY='kkt-v3';
+function mkState(o){const info={...o.info};const grade=info.grade||'',cover=info.cover||'';delete info.grade;delete info.cover;
+  return{v:3,info,cur:1,classes:[{id:1,grade,cover,members:o.members||[],months:o.months||[],acts:o.acts||[],meetings:o.meetings||[]}]}}
+/* កំណែ public៖ គ្មានឈ្មោះ រូបថត ឬកាលបរិច្ឆេទផ្ទាល់ខ្លួន */
+const SEED=()=>{const o=SEED0();o.members=[];o.info={...o.info,cover:'',principal:'',lunar:'',signDate:'',signG:''};return mkState(o)};
+const ACTS_T=()=>SEED0().acts.map(a=>({...a,c:{}}));
+function cl(){return S.classes.find(c=>c.id==S.cur)||S.classes[0]}
+const FB_CONFIG=null; /* ដាក់ Firebase config នៅទីនេះ ប្រសិនបើចង់ឲ្យគ្រប់អ្នកប្រើភ្ជាប់ Firestore ដោយស្វ័យប្រវត្តិ */
+const TABS=[['home','ទិដ្ឋភាពទូទៅ'],['members','សមាជិក'],['plan','ផែនការប្រចាំឆ្នាំ'],['meetings','កិច្ចប្រជុំ'],['book','សៀវភៅ (បោះពុម្ព)'],['data','ទិន្នន័យ']];
+const CATS=['មាតាបិតា','ក្រុមប្រឹក្សាកុមារយុវជន','គ្រូបន្ទុកថ្នាក់'];
+const TASKS=['ទទួលបន្ទុកមើលការខុសត្រូវប្រតិបត្តិការរួម ក្នុងការធ្វើផែនការ និងអនុវត្តផែនការកែលម្អថ្នាក់រៀន ដើម្បីធានាបានសិស្សរៀនចេះ។','ទទួលការងារផែនការ និងរបាយការណ៍កែលម្អថ្នាក់រៀន។','ទទួលការងារហិរញ្ញវត្ថុ និងធនធានសម្រាប់កែលម្អថ្នាក់រៀន។','ទទួលការងារប្រជុំពិនិត្យតាមដានប្រចាំខែ។','ទទួលទិន្នន័យរដ្ឋបាលថ្នាក់រៀន។','ទទួលការជួយសិស្សមកពីគ្រួសារជួបការលំបាក និងមានអំពើហឹង្សា។','ទទួលការគ្រប់គ្រងបរិស្ថានថ្នាក់រៀន និងសាលារៀន។','ផ្សេងៗ'];
+const JOBS=['កសិករ','គ្រូបង្រៀន','មេផ្ទះ','សិស្ស','អ្នកលក់ដូរ','កម្មករ','មន្ត្រីរាជការ','បុគ្គលិកក្រុមហ៊ុន','ផ្សេងៗ'];
+const ROLES=['ប្រធាន','អនុប្រធាន','សមាជិក'];
+const SEED0=()=>({
+  info:{province:'មន្ទីរអប់រំ យុវជន និងកីឡាខេត្តពោធិ៍សាត់',office:'ការិយាល័យអប់រំ យុវជន និងកីឡាស្រុកកណ្ដៀង',school:'វិទ្យាល័យ ហ៊ុន សែន កណ្ដៀង',grade:'10B',year:'២០២៥-២០២៦',principal:'',logo:IMG.logo,cover:IMG.cover,lunar:'ថ្ងៃពុធ ១៣រោច ខែមិគសិរ ឆ្នាំម្សាញ់ សប្តស័ក ព.ស.២៥៦៩',signDate:'កណ្តៀង, ថ្ងៃទី      ខែ ធ្នូ ឆ្នាំ២០២៥'},
+  members:[],
+  months:['១១','១២','១','២','៣','៥','៦','៧','៨','៩'],
+  acts:[
+    {id:1,t:'ចូលរួមក្នុងសកម្មភាពតេស្តដើមឆ្នាំ',c:{0: 1}},
+    {id:2,t:'ចូលរួមដឹងឮ និងគាំទ្រផែនការសិក្សាឆ្នាំរបស់សិស្ស',c:{0: 1, 1: 1}},
+    {id:3,t:'ចូលរួមដឹងឮ និងគាំទ្រផែនការបង្រៀន៣ឆ្នាំរបស់គ្រូ',c:{0: 1}},
+    {id:4,t:'ចូលរួមដឹងឮ និងគាំទ្រផែនការបង្រៀន៣ខែរបស់គ្រូ',c:{2: 1, 5: 1, 8: 1}},
+    {id:5,t:'ចូលរួមសកម្មភាពកែលម្អថ្នាក់រៀន',c:{1: 1, 6: 1}},
+    {id:6,t:'ប្រជុំពិនិត្យតាមដានលទ្ធផលសិក្សាសិស្សប្រចាំខែ',c:{0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1}},
+    {id:7,t:'មាតាបិតាមកសង្កេតកូនរៀនក្នុងថ្នាក់បាន២ដង១ឆ្នាំ',c:{2: 1, 6: 1}}],
+  meetings:[]
+});
+let DL=null;
+try{window.claude.use('downloads').then(d=>{DL=d;if(tab=='book')render()},()=>{})}catch(e){}
+
+/* ===== Firestore (ត្រូវការទំព័រដែលអនុញ្ញាតឲ្យភ្ជាប់ Google ដូចជា GitHub Pages) ===== */
+const FS={st:'off',msg:'',db:null,sid:'default',dirty:new Set(),t:null,unsub:[],order:[]};
+const FBV='https://www.gstatic.com/firebasejs/10.14.1/';
+function fbCfg(){if(FB_CONFIG)return FB_CONFIG;try{return JSON.parse(lsGet('kkt-fbcfg')||'null')}catch(e){return null}}
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('blocked'));document.head.appendChild(s);setTimeout(()=>rej(new Error('timeout')),10000)})}
+const clean=o=>JSON.parse(JSON.stringify(o));
+function badge(){const b=document.getElementById('fsBadge');if(!b)return;
+  b.textContent=FS.st=='on'?'☁ Firestore':FS.st=='loading'?'☁ កំពុងភ្ជាប់…':FS.st=='error'?'☁ មិនភ្ជាប់':'ក្នុងម៉ាស៊ីន';b.dataset.st=FS.st}
+function safeRender(){if(editing||(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('form')))return;render()}
+function fsSchedule(){if(FS.st!='on')return;clearTimeout(FS.t);FS.t=setTimeout(fsFlush,700)}
+async function fsFlush(){
+  if(!FS.db||FS.st!='on')return;const ids=[...FS.dirty];FS.dirty.clear();if(!ids.length)return;
+  const base=FS.db.collection('kkt_schools').doc(FS.sid),b=FS.db.batch();
+  b.set(base,clean({info:S.info,order:S.classes.map(c=>c.id),updated:Date.now()}));
+  for(const id of ids){if(id=='info')continue;const c=S.classes.find(x=>x.id==id),r=base.collection('classes').doc(String(id));
+    if(c){if(JSON.stringify(c).length>950000)toast('ថ្នាក់ '+c.grade+' មានរូបភាពធំពេក (លើស ១MB) សូមបន្ថយរូបថត');b.set(r,clean(c))}else b.delete(r)}
+  try{await b.commit()}catch(e){FS.st='error';FS.msg=e.code=='permission-denied'?'Firestore បដិសេធសិទ្ធិ (ពិនិត្យ Security Rules)':(e.message||'កំហុស');badge();toast('រក្សាទុកក្នុង Firestore មិនបាន')}
+}
+async function fsPull(ref){
+  const ds=await ref.get(),d=ds.data(),qs=await ref.collection('classes').get();
+  const cs=qs.docs.map(x=>x.data());FS.order=d.order||[];
+  cs.sort((a,b)=>FS.order.indexOf(a.id)-FS.order.indexOf(b.id));
+  S.info=d.info||S.info;if(cs.length)S.classes=cs;if(!S.classes.some(c=>c.id==S.cur))S.cur=S.classes[0].id;persist()}
+function fsListen(ref){
+  FS.unsub.forEach(f=>f());FS.unsub=[];
+  FS.unsub.push(ref.onSnapshot(ds=>{if(ds.metadata.hasPendingWrites||!ds.exists)return;const d=ds.data();FS.order=d.order||FS.order;
+    if(JSON.stringify(d.info)!==JSON.stringify(S.info)){S.info=d.info;persist();safeRender()}}));
+  FS.unsub.push(ref.collection('classes').onSnapshot(qs=>{if(qs.metadata.hasPendingWrites)return;let ch=false;
+    qs.docChanges().forEach(c=>{const x=c.doc.data(),i=S.classes.findIndex(k=>k.id==x.id);
+      if(c.type=='removed'){if(i>=0&&S.classes.length>1){S.classes.splice(i,1);ch=true}}
+      else if(i<0){S.classes.push(x);ch=true}else if(JSON.stringify(S.classes[i])!==JSON.stringify(x)){S.classes[i]=x;ch=true}});
+    if(ch){S.classes.sort((a,b)=>FS.order.indexOf(a.id)-FS.order.indexOf(b.id));if(!S.classes.some(c=>c.id==S.cur))S.cur=S.classes[0].id;persist();safeRender()}}));
+}
+async function fsInit(){
+  const cfg=fbCfg();if(!cfg||!cfg.projectId){FS.st='off';badge();return}
+  FS.sid=lsGet('kkt-sid')||'default';FS.st='loading';FS.msg='';badge();
+  try{
+    if(!window.firebase){await loadScript(FBV+'firebase-app-compat.js');await loadScript(FBV+'firebase-firestore-compat.js')}
+    if(!firebase.apps.length)firebase.initializeApp(cfg);
+    FS.db=firebase.firestore();
+    const ref=FS.db.collection('kkt_schools').doc(FS.sid),snap=await ref.get();
+    FS.st='on';
+    if(!snap.exists){markAll();await fsFlush()}else{await fsPull(ref)}
+    fsListen(ref);
+  }catch(e){FS.st='error';FS.msg=e.message=='blocked'||e.message=='timeout'?'មិនអាចទាញ Firebase បានទេ។ ទំព័រនេះប្រហែលមិនអនុញ្ញាតការភ្ជាប់ទៅ Google ឬគ្មានអ៊ីនធឺណិត។':e.code=='permission-denied'?'Firestore បដិសេធសិទ្ធិ (ពិនិត្យ Security Rules)':(e.message||'កំហុស')}
+  badge();safeRender();
+}
+function fsOff(){FS.unsub.forEach(f=>f());FS.unsub=[];FS.st='off';FS.db=null;badge()}
+
+let S, tab='home', editing=null, confirmId=null, fail=false;
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){fail=true;return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){fail=true}};
+function normalize(o){if(o&&Array.isArray(o.classes)&&o.info)return o;if(o&&o.info&&Array.isArray(o.members))return mkState(o);return null}
+function load(){
+  let o=null;try{o=normalize(JSON.parse(lsGet(KEY)||'null'))}catch(e){}
+  if(!o){try{o=normalize(JSON.parse(lsGet('kkt-v2')||'null'))}catch(e){}}
+  S=o||SEED();if(!S.classes.length)S=SEED();
+  const c=+lsGet('kkt-cur');if(S.classes.some(x=>x.id==c))S.cur=c;else S.cur=S.classes[0].id}
+function persist(){lsSet(KEY,JSON.stringify(S));lsSet('kkt-cur',S.cur)}
+function save(...ids){persist();FS.dirty.add('info');(ids.length?ids:[cl().id]).forEach(i=>FS.dirty.add(i));fsSchedule()}
+function markAll(){FS.dirty.add('info');S.classes.forEach(c=>FS.dirty.add(c.id))}
+const KH='០១២៣៤៥៦៧៨៩';
+const kh=n=>String(n).replace(/\d/g,d=>KH[d]);
+const en=s=>String(s).replace(/[០-៩]/g,d=>KH.indexOf(d));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nid=a=>a.reduce((m,x)=>Math.max(m,x.id),0)+1;
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2200)}
+const fmtDate=d=>{if(!d)return'';const [y,m,dd]=d.split('-');return kh(+dd)+'/'+kh(+m)+'/'+kh(y)};
+
+function pct(c){c=c||cl();let tot=0,done=0;c.acts.forEach(a=>c.months.forEach((m,i)=>{const v=a.c[i];if(v){tot++;if(v==2)done++}}));return{tot,done,p:tot?Math.round(done/tot*100):0}}
+
+function head(){
+  const i=S.info;
+  document.getElementById('hTitle').textContent='សៀវភៅគណៈគ្រប់គ្រងថ្នាក់រៀន (គគថ) ថ្នាក់ទី '+kh(cl().grade);
+  document.getElementById('hSub').textContent=i.school+' · ឆ្នាំសិក្សា '+i.year;
+  document.title='ប្រព័ន្ធ គគថ '+cl().grade;const lg=document.getElementById('hLogo');lg.hidden=!i.logo;if(i.logo)lg.src=i.logo;
+  const sel=document.getElementById('clsSel');if(sel)sel.innerHTML=S.classes.map(c=>`<option value="${c.id}" ${c.id==cl().id?'selected':''}>ថ្នាក់ទី ${esc(c.grade)}</option>`).join('');badge();
+  document.getElementById('nav').innerHTML=TABS.map(([k,l])=>`<a href="#${k}" ${k==tab?'aria-current="page"':''}>${l}</a>`).join('');
+}
+
+function yearOpts(cur){
+  const L=[];for(let y=2026;y<=2029;y++)L.push(kh(y)+'-'+kh(y+1));
+  if(!L.includes(cur))L.unshift(cur);
+  return L.map(x=>`<option ${x==cur?'selected':''}>${esc(x)}</option>`).join('');
+}
+function vClasses(){
+  const GR=['7','8','9','10','11','12'],SE=['A','B','C','D','E','F','G','H'];
+  const rows=S.classes.map(c=>{const p=pct(c);return `<tr><td><b>ថ្នាក់ទី ${esc(c.grade)}</b>${c.id==S.cur?' <span class="tag g">កំពុងប្រើ</span>':''}</td><td>${kh(c.members.length)}</td><td>${kh(c.meetings.length)}</td><td>${kh(p.p)}%</td>
+    <td style="white-space:nowrap"><button class="sm" data-a="selCls" data-id="${c.id}">បើក</button> <button class="sm dng" data-a="delCls" data-id="${c.id}">${confirmId=='c'+c.id?'ចុចម្ដងទៀតដើម្បីលុប':'លុប'}</button></td></tr>`}).join('');
+  return `<section class="panel"><h2>ថ្នាក់រៀន (${kh(S.classes.length)})</h2>
+  <div class="scroll" style="margin-top:12px"><table class="cls-t"><thead><tr><th>ថ្នាក់</th><th>សមាជិក</th><th>កិច្ចប្រជុំ</th><th>ផែនការ</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
+  <form id="clsForm" class="form"><div class="full"><b>បង្កើតថ្នាក់ថ្មី (ជ្រើសបានច្រើនម្ដង)</b><p class="note">ជ្រើសកម្រិតថ្នាក់ និងក្រុម ប្រព័ន្ធនឹងបង្កើតគ្រប់បន្សំ ឧ. ជ្រើស ៧ ៨ និង A B នឹងបានថ្នាក់ 7A 7B 8A 8B។ ថ្នាក់ដែលមានស្រាប់នឹងមិនត្រូវបង្កើតស្ទួនទេ។</p></div>
+    <div class="full"><label>កម្រិតថ្នាក់</label><div class="chips">${GR.map(g=>`<label class="chip"><input type="checkbox" name="g" value="${g}"><span>${g}</span></label>`).join('')}</div></div>
+    <div class="full"><label>ក្រុម</label><div class="chips">${SE.map(s=>`<label class="chip"><input type="checkbox" name="s" value="${s}"><span>${s}</span></label>`).join('')}</div></div>
+    <div class="full"><button class="pri" type="submit">បង្កើតថ្នាក់</button></div></form></section>`}
+function vHome(){
+  const p=pct(), i=S.info, par=cl().members.filter(m=>m.cat==CATS[0]).length, yo=cl().members.filter(m=>m.cat==CATS[1]).length, t=cl().members.filter(m=>m.cat==CATS[2]).length;
+  const last=[...cl().meetings].sort((a,b)=>b.date.localeCompare(a.date))[0];
+  return vClasses()+`<div class="stats">
+    <div class="stat"><b>${kh(cl().members.length)}</b><span>សមាជិកគណៈកម្មការ</span></div>
+    <div class="stat"><b>${kh(par)} · ${kh(yo)} · ${kh(t)}</b><span>មាតាបិតា · កុមារ · គ្រូ</span></div>
+    <div class="stat"><b>${kh(cl().meetings.length)}</b><span>កិច្ចប្រជុំបានកត់ត្រា</span></div>
+    <div class="stat"><b>${kh(p.p)}%</b><span>សកម្មភាពបានអនុវត្ត (${kh(p.done)}/${kh(p.tot)})</span></div></div>
+  <section class="panel"><h2>ដំណើរការផែនការប្រចាំឆ្នាំ</h2><div class="bar" style="margin-top:12px"><i style="width:${p.p}%"></i></div>
+    <p class="note">${p.tot?'គិតចំពោះប្រអប់ដែលបានកំណត់ក្នុងតារាងផែនការ។':'មិនទាន់មានសកម្មភាពកំណត់ក្នុងតារាងផែនការនៅឡើយ។ ចូលទៅផ្ទាំង «ផែនការប្រចាំឆ្នាំ» ដើម្បីចុចកំណត់ខែ។'}</p></section>
+  <section class="panel"><h2>កិច្ចប្រជុំចុងក្រោយ</h2>${last?`<div class="meet"><b>${esc(last.topic)}</b><span class="tag g" style="justify-self:start">${fmtDate(last.date)}</span><p>${esc(last.decision||last.notes)}</p></div>`:'<div class="empty">មិនទាន់មានកិច្ចប្រជុំ។ ចូលផ្ទាំង «កិច្ចប្រជុំ» ដើម្បីកត់ត្រា។</div>'}</section>
+  <section class="panel"><div class="row"><h2>ព័ត៌មានសាលា និងថ្នាក់ ${esc(cl().grade)}</h2></div>
+  <form class="form" id="infoForm">
+    <label class="full">មន្ទីរអប់រំ<input name="province" value="${esc(i.province)}"></label>
+    <label class="full">ការិយាល័យអប់រំ<input name="office" value="${esc(i.office)}"></label>
+    <label>សាលា<input name="school" value="${esc(i.school)}"></label>
+    <label>ឈ្មោះថ្នាក់ (ថ្នាក់ដែលកំពុងប្រើ)<input name="grade" value="${esc(cl().grade)}"></label>
+    <label>ឆ្នាំសិក្សា<select name="year">${yearOpts(i.year)}</select></label>
+    <label>នាយកសាលា<input name="principal" value="${esc(i.principal)}"></label>
+    <label>ទីកន្លែងចុះហត្ថលេខា<input name="place" id="fPlace" value="${esc(i.place||'កណ្តៀង')}"></label>
+    <label>កាលបរិច្ឆេទចុះហត្ថលេខា (ថ្ងៃ/ខែ/ឆ្នាំ គ.ស. ឧ. 19/11/2026)<input name="signG" id="signG" inputmode="numeric" placeholder="19/11/2026" value="${esc(i.signG||'')}"></label>
+    <label class="full">កាលបរិច្ឆេទចន្ទគតិ (គណនាស្វ័យប្រវត្តិ អាចកែបាន)<input name="lunar" id="fLunar" value="${esc(i.lunar)}"></label>
+    <label class="full">កាលបរិច្ឆេទសុរិយគតិ (គណនាស្វ័យប្រវត្តិ អាចកែបាន)<input name="signDate" id="fSign" value="${esc(i.signDate)}"></label>
+    <p class="note full" id="signHint" style="margin:0">បញ្ចូលថ្ងៃ ខែ ឆ្នាំ ប្រព័ន្ធនឹងបំពេញចន្ទគតិ និងសុរិយគតិឲ្យ។ ចន្ទគតិគណនាតាមក្បួន អាចខុសពីប្រតិទិនផ្លូវការ ១ថ្ងៃ ដូច្នេះសូមផ្ទៀងផ្ទាត់មុនប្រើក្នុងឯកសារផ្លូវការ។</p>
+    <label>ឡូហ្កូ<input type="file" accept="image/*" data-up="logo" data-max="300"><input type="hidden" name="logo" value="${esc(i.logo)}"></label>
+    <label>រូបថតក្រុមថ្នាក់ (គម្របសៀវភៅ)<input type="file" accept="image/*" data-up="cover" data-max="800"><input type="hidden" name="cover" value="${esc(cl().cover)}"></label>
+    <div class="full"><button class="pri" type="submit">រក្សាទុក</button></div></form></section>`;
+}
+
+function memForm(m){
+  const n=!m.id;
+  return `<form class="panel form" id="memForm" data-id="${m.id||''}">
+    <h2 class="full">${n?'បន្ថែមសមាជិកថ្មី':'កែប្រែសមាជិក'}</h2>
+    <label>ឈ្មោះ<input name="name" required value="${esc(m.name)}"></label>
+    <label>ភេទ<select name="sex">${['ប្រុស','ស្រី'].map(x=>`<option ${m.sex==x?'selected':''}>${x}</option>`).join('')}</select></label>
+    <label>អាយុ (ឆ្នាំ)<input name="age" inputmode="numeric" value="${esc(m.age??'')}"></label>
+    <label>តំណាង<select name="cat">${CATS.map(x=>`<option ${m.cat==x?'selected':''}>${x}</option>`).join('')}</select></label>
+    <label>តួនាទី<select name="role">${ROLES.map(x=>`<option ${m.role==x?'selected':''}>${x}</option>`).join('')}</select></label>
+    ${(()=>{const inList=!m.job||JOBS.includes(m.job);return `<label>មុខរបរ<select name="jobSel" id="jobSel">${JOBS.map(x=>`<option ${(inList?m.job==x:x=='ផ្សេងៗ')?'selected':''}>${x}</option>`).join('')}</select></label>
+    <label id="jobOtherL" ${inList?'hidden':''}>មុខរបរផ្សេង<input name="jobOther" id="jobOther" value="${inList?'':esc(m.job)}"></label>`})()}
+    <label class="full">រូបថត<input type="file" accept="image/*" data-up="photo" data-max="320"><input type="hidden" name="photo" value="${esc(m.photo)}"></label>
+    ${(()=>{const ok=!m.task||TASKS.includes(m.task);return `<label class="full">ភារកិច្ច<select name="taskSel" id="taskSel">${TASKS.map(x=>`<option ${(ok?m.task==x:x=='ផ្សេងៗ')?'selected':''}>${esc(x)}</option>`).join('')}</select></label>
+    <label class="full" id="taskOtherL" ${ok?'hidden':''}>ភារកិច្ចផ្សេង<textarea name="taskOther" id="taskOther">${ok?'':esc(m.task)}</textarea></label>`})()}
+    <div class="full row" style="justify-content:flex-start"><button class="pri" type="submit">រក្សាទុក</button><button type="button" data-a="cancel">បោះបង់</button></div></form>`;
+}
+function vMembers(){
+  if(editing&&editing.t=='m')return memForm(editing.o);
+  const order=m=>ROLES.indexOf(m.role);
+  const list=[...cl().members].sort((a,b)=>order(a)-order(b));
+  return `<div class="row"><h2>សមាសភាពគណៈកម្មការ (${kh(cl().members.length)} រូប)</h2><button class="pri" data-a="newMem">+ បន្ថែមសមាជិក</button></div>
+  <div class="members">${list.map((m,i)=>`<article class="mem"><div class="row" style="justify-content:flex-start"><span class="tag g">${esc(m.role)}</span><span class="tag">${esc(m.cat)}</span></div>
+    ${m.photo?`<img class="ph" src="${m.photo}" alt="">`:''}<h3>${esc(m.name)}</h3><p>ភេទ៖ ${esc(m.sex)} · អាយុ៖ ${kh(m.age||'')} ឆ្នាំ</p><p>មុខរបរ៖ ${esc(m.job)}</p><p style="color:var(--muted)">${esc(m.task)}</p>
+    <div class="row" style="justify-content:flex-start"><button class="sm" data-a="editMem" data-id="${m.id}">កែប្រែ</button>
+    <button class="sm dng" data-a="delMem" data-id="${m.id}">${confirmId=='m'+m.id?'ចុចម្ដងទៀតដើម្បីលុប':'លុប'}</button></div></article>`).join('')||'<div class="empty">មិនទាន់មានសមាជិក</div>'}</div>`;
+}
+
+function vPlan(){
+  const head=`<tr><th rowspan="2">សកម្មភាព</th><th colspan="${cl().months.length}">កាលវិភាគ (ខែ)</th><th rowspan="2"></th></tr><tr>${cl().months.map((m,i)=>`<th>${esc(m)}</th>`).join('')}</tr>`;
+  const rows=cl().acts.map((a,ai)=>`<tr><td class="act">${kh(ai+1)}. ${esc(a.t)}</td>${cl().months.map((m,i)=>{const v=a.c[i]||0;return `<td><button class="cell ${v==1?'p':v==2?'d':''}" data-a="cell" data-id="${a.id}" data-i="${i}" aria-label="${esc(a.t)} ខែ ${esc(m)}">${v==1?'◐':v==2?'✓':''}</button></td>`}).join('')}
+    <td><button class="sm dng" data-a="delAct" data-id="${a.id}">${confirmId=='a'+a.id?'បញ្ជាក់':'លុប'}</button></td></tr>`).join('');
+  return `<div class="row"><h2>តារាងផែនការសកម្មភាពប្រចាំឆ្នាំ</h2><div class="legend"><span>ចុចប្រអប់៖</span><span><span class="tag g">◐</span> បានគ្រោង</span><span><span class="tag ok">✓</span> បានអនុវត្ត</span></div></div>
+  <div class="panel"><div class="scroll"><table><thead>${head}</thead><tbody>${rows}</tbody></table></div></div>
+  <form class="panel row" id="actForm" style="justify-content:flex-start"><label style="flex:1;min-width:220px">សកម្មភាពថ្មី<input name="t" required placeholder="ឧ. ចូលរួមកិច្ចប្រជុំមាតាបិតា"></label><button class="pri" type="submit" style="align-self:end">+ បន្ថែម</button></form>
+  <form class="panel row" id="monForm" style="justify-content:flex-start"><label style="flex:1;min-width:220px">ខែក្នុងតារាង (បំបែកដោយក្បៀស)<input name="m" value="${esc(cl().months.join(', '))}"></label><button type="submit" style="align-self:end">ប្ដូរខែ</button></form>`;
+}
+
+function meetForm(m){
+  return `<form class="panel form" id="meetForm" data-id="${m.id||''}">
+    <h2 class="full">${m.id?'កែប្រែកិច្ចប្រជុំ':'កត់ត្រាកិច្ចប្រជុំថ្មី'}</h2>
+    <label>កាលបរិច្ឆេទ<input type="date" name="date" required value="${esc(m.date||new Date().toISOString().slice(0,10))}"></label>
+    <label>ចំនួនអ្នកចូលរួម<input name="n" inputmode="numeric" value="${esc(m.n??'')}"></label>
+    <label class="full">ប្រធានបទ<input name="topic" required value="${esc(m.topic)}" placeholder="ឧ. ប្រជុំពិនិត្យលទ្ធផលសិក្សាប្រចាំខែ"></label>
+    <label class="full">ខ្លឹមសារពិភាក្សា<textarea name="notes">${esc(m.notes)}</textarea></label>
+    <label class="full">សេចក្ដីសម្រេច / សកម្មភាពបន្ត<textarea name="decision">${esc(m.decision)}</textarea></label>
+    <div class="full row" style="justify-content:flex-start"><button class="pri" type="submit">រក្សាទុក</button><button type="button" data-a="cancel">បោះបង់</button></div></form>`;
+}
+function vMeet(){
+  if(editing&&editing.t=='e')return meetForm(editing.o);
+  const l=[...cl().meetings].sort((a,b)=>b.date.localeCompare(a.date));
+  return `<div class="row"><h2>កំណត់ហេតុកិច្ចប្រជុំ</h2><button class="pri" data-a="newMeet">+ កិច្ចប្រជុំថ្មី</button></div>
+  <section class="panel">${l.map(m=>`<div class="meet"><div class="row"><b>${esc(m.topic)}</b><span><span class="tag g">${fmtDate(m.date)}</span> ${m.n?`<span class="tag">${kh(m.n)} នាក់</span>`:''}</span></div>
+    ${m.notes?`<p>${esc(m.notes)}</p>`:''}${m.decision?`<p><b>សេចក្ដីសម្រេច៖</b> ${esc(m.decision)}</p>`:''}
+    <div class="row" style="justify-content:flex-start"><button class="sm" data-a="editMeet" data-id="${m.id}">កែប្រែ</button><button class="sm dng" data-a="delMeet" data-id="${m.id}">${confirmId=='e'+m.id?'ចុចម្ដងទៀតដើម្បីលុប':'លុប'}</button></div></div>`).join('')||'<div class="empty">មិនទាន់មានកិច្ចប្រជុំ។ ចុច «កិច្ចប្រជុំថ្មី» ដើម្បីចាប់ផ្ដើម។</div>'}</section>`;
+}
+
+function vData(){
+  return `<section class="panel"><h2>រក្សាទុក និងចែករំលែកទិន្នន័យ</h2>
+  <p>ទិន្នន័យទាំងអស់រក្សាទុកក្នុង Local Storage នៃកម្មវិធីរុករករបស់អ្នក។ វាមិនបញ្ជូនទៅកន្លែងផ្សេងទេ ហើយម៉ាស៊ីនផ្សេងនឹងមិនឃើញទិន្នន័យនេះទេ ទាល់តែអ្នកផ្ទេរតាមកូដខាងក្រោម។</p>
+  ${fail?'<p class="note" style="color:var(--warn)">កម្មវិធីរុករកនេះរារាំងការរក្សាទុក។ ទិន្នន័យនឹងបាត់ពេលបិទទំព័រ។ សូមចម្លងកូដទុកជាមុន។</p>':''}
+  <label style="margin-top:12px">កូដទិន្នន័យ (ចម្លង ឬបិទភ្ជាប់)<textarea id="blob" style="min-height:160px;font-family:monospace;font-size:12px"></textarea></label>
+  <div class="row" style="justify-content:flex-start;margin-top:12px"><button class="pri" data-a="export">បង្កើត និងចម្លងកូដ</button><button data-a="import">នាំចូលពីកូដ</button></div>
+  <p class="note">ចែករំលែកប្រព័ន្ធ៖ ផ្ញើតំណនៃទំព័រនេះទៅអ្នកដទៃ ពួកគេនឹងមានប្រព័ន្ធទទេផ្ទាល់ខ្លួន។ ប្រសិនបើចង់ឲ្យពួកគេឃើញទិន្នន័យដូចអ្នក សូមផ្ញើកូដទិន្នន័យ ហើយឲ្យគេនាំចូល។</p></section>
+  <section class="panel"><h2>Firestore (ទិន្នន័យរួមគ្នា)</h2>
+  <p>ស្ថានភាព៖ <b id="fsStat">${FS.st=='on'?'ភ្ជាប់ហើយ':FS.st=='loading'?'កំពុងភ្ជាប់…':FS.st=='error'?'មិនភ្ជាប់':'មិនទាន់ភ្ជាប់ (ប្រើ Local Storage)'}</b></p>
+  ${FS.msg?`<p class="note" style="color:var(--warn)">${esc(FS.msg)}</p>`:''}
+  <label style="margin-top:8px">Firebase config (បិទភ្ជាប់ពី Firebase Console → Project settings → Your apps)<textarea id="fbcfg" style="font-family:monospace;font-size:12px;min-height:110px" placeholder='{ "apiKey": "...", "authDomain": "...", "projectId": "...", "appId": "..." }'>${esc(lsGet('kkt-fbcfg')||'')}</textarea></label>
+  <label style="margin-top:8px">លេខកូដសាលា (ឲ្យអ្នកប្រើដូចគ្នាប្រើកូដដូចគ្នា)<input id="sid" value="${esc(lsGet('kkt-sid')||'default')}"></label>
+  <div class="row" style="justify-content:flex-start;margin-top:12px"><button class="pri" data-a="fsConnect">ភ្ជាប់ Firestore</button><button data-a="fsPush">ផ្ញើទិន្នន័យក្នុងម៉ាស៊ីនទៅ Firestore (សរសេរជាន់)</button><button class="dng" data-a="fsDisc">ផ្ដាច់</button></div>
+  <p class="note">ការភ្ជាប់លើកដំបូង៖ បើ Firestore ទទេ ទិន្នន័យក្នុងម៉ាស៊ីននឹងត្រូវបានផ្ញើឡើង។ បើមានទិន្នន័យរួចហើយ ទិន្នន័យពី Firestore នឹងជំនួសទិន្នន័យក្នុងម៉ាស៊ីននេះ។ ទិន្នន័យថ្នាក់ត្រូវរក្សាទុកដាច់ដោយឡែកតាមថ្នាក់ ហើយការកែព្រមគ្នាលើថ្នាក់តែមួយ ការរក្សាទុកក្រោយបំផុតឈ្នះ។</p>
+  <p class="note">Security Rules សម្រាប់សាកល្បង (ទុកឲ្យអ្នកដែលស្គាល់ project អាន/សរសេរបាន ហើយមិនត្រូវប្រើសម្រាប់ទិន្នន័យសំខាន់)៖</p>
+  <pre class="rules">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /kkt_schools/{school}/{document=**} {
+      allow read, write: if true;
+    }
+  }
+}</pre></section>
+  <section class="panel"><h2>ចាប់ផ្ដើមឡើងវិញ</h2><p>លុបទិន្នន័យទាំងអស់ ហើយត្រឡប់ទៅទិន្នន័យដើមនៃថ្នាក់ 10B។</p>
+  <button class="dng" data-a="reset">${confirmId=='reset'?'ចុចម្ដងទៀតដើម្បីបញ្ជាក់':'កំណត់ឡើងវិញ'}</button></section>`;
+}
+
+
+function gradeTitle(g){const m=String(g).match(/^(.*?)([A-Za-z])$/);return m?m[1]+'('+m[2]+')':g}
+function vBook(){
+  const i=S.info;
+  const pres=cl().members.find(m=>m.role=='ប្រធាន'), dep=cl().members.find(m=>m.role=='អនុប្រធាន');
+  const rest=cl().members.filter(m=>m!==pres&&m!==dep).sort((a,b)=>CATS.indexOf(a.cat)-CATS.indexOf(b.cat));
+  const lab=c=>c==CATS[1]?'ក្រុមប្រឹក្សាកុមារ':c==CATS[0]?'តំណាងមាតាបិតា':'គ្រូបន្ទុកថ្នាក់';
+  const box=m=>m?`<div class="ob">${m.photo?`<img src="${m.photo}" alt="">`:'<div class="noimg"></div>'}<b>${esc(m.name)}</b><span>${esc(m.role)}</span><small>${lab(m.cat)}</small></div>`:'';
+  const cnt=c=>cl().members.filter(m=>m.cat==c).length;
+  const mem=cl().members.map((m,k)=>`<div class="bm"><div>${kh(k+1)}&nbsp; ឈ្មោះ <b>${esc(m.name)}</b> &nbsp;ភេទ៖ ${esc(m.sex)} &nbsp;អាយុ៖ ${kh(m.age||'')} ឆ្នាំ</div>
+    <div>ជា<b>${esc(m.role)}</b> គណៈកម្មការគ្រប់គ្រងថ្នាក់រៀន ${esc(m.task)}</div><div>មុខងារបច្ចុប្បន្នជា ៖ ${esc(m.job)}</div></div>`).join('');
+  const tb=cl().acts.map((a,ai)=>`<tr><td class="act">${kh(ai+1)}. ${esc(a.t)}</td>${cl().months.map((m,x)=>`<td class="${a.c[x]==1?'lb':a.c[x]==2?'db':''}"></td>`).join('')}</tr>`).join('');
+  const kg=`<div class="kg"><div class="moul">ព្រះរាជាណាចក្រកម្ពុជា</div><div class="moul">ជាតិ សាសនា ព្រះមហាក្សត្រ</div><div class="orn2"><i></i><b>❖</b><i></i></div></div>`;
+  return `<div class="bookbar panel"><b>ទម្រង់សៀវភៅដូចឯកសារដើម</b>${DL?`<div><button class="pri" data-a="pdf" id="pdfBtn">រក្សាជា PDF</button></div><p class="note" style="margin:0">បង្កើត PDF ទំហំ A4 ចំនួន ៤ ទំព័រ។ ការបង្កើតអាចចំណាយពេលពីរបីវិនាទី។</p>`:`<p class="note" style="margin:0">រក្សាទុកជា PDF៖ បើកទំព័រនេះក្នុង Chrome ឬ Edge ចុច Ctrl+P ជ្រើស «Save as PDF» ហើយបើក «Background graphics»។</p>`}</div>
+  <div class="pages">
+  <section class="pg cover"><div class="cb">${kg}
+    <div class="org">${i.logo?`<img src="${i.logo}" alt="">`:''}<div class="moul orgt">${esc(i.province)}<br>${esc(i.office)}<br>${esc(i.school)}</div></div>
+    <hr><div class="ttl moul">សៀវភៅគណៈគ្រប់គ្រង់ថ្នាក់រៀន(គគថ)</div><div class="ttl moul">ថ្នាក់ទី${esc(gradeTitle(cl().grade))}</div>
+    ${cl().cover?`<img class="cimg" src="${cl().cover}" alt="">`:''}
+    <div class="yr moul">ឆ្នាំសិក្សា ${esc(i.year)}</div></div></section>
+  <section class="pg">${kg}
+    <div class="moul sm" style="margin:10px 0">${esc(i.office)}<br>${esc(i.school)}</div>
+    <div class="blue moul c">គណៈកម្មការគ្រប់គ្រងថ្នាក់រៀន<br>ថ្នាក់ទី “${esc(cl().grade)}”<br>ឆ្នាំសិក្សា ${esc(i.year)}<br>រចនាសម្ព័ន្ធគណៈកម្មការថ្នាក់រៀន</div>
+    <div class="chart"><div class="lvl">${box(pres)}</div><div class="vl"></div><div class="lvl">${box(dep)}</div><div class="vl"></div>
+    <div class="lvl">${rest.map(box).join('')}</div></div></section>
+  <section class="pg pur"><p class="para">គណៈកម្មការគ្រប់គ្រង ថ្នាក់ទី “${esc(cl().grade)}” ${esc(i.school)} មានសមាសភាពចំនួន${kh(cl().members.length)}រូប ក្នុងនោះមានតំណាងមាតាបិតាចំនួន${kh(cnt(CATS[0]))}រូប ក្រុមប្រឹក្សាកុមារយុវជន${kh(cnt(CATS[1]))}នាក់ និងគ្រូបន្ទុកថ្នាក់${kh(cnt(CATS[2]))}រូប។ គណៈកម្មការគ្រប់គ្រងថ្នាក់រៀន គឺជាតំណាងឱ្យមាតាបិតា និងអ្នកអាណាព្យាបាលសិស្សក្នុងថ្នាក់ទាំងអស់ក្នុងការដឹកនាំ និងគ្រប់គ្រងសកម្មភាពរៀនរបស់សិស្ស ការបង្រៀនរបស់គ្រូ និងការកែលម្អបរិស្ថានថ្នាក់រៀន។</p>
+    <p class="para"><b>សមាសភាពទាំង ${kh(cl().members.length)} រូប មាន៖</b></p>${mem}</section>
+  <section class="pg pur"><div class="moul c plt">តារាងផែនការសកម្មភាពប្រចាំឆ្នាំ</div>
+    <table class="pt"><thead><tr><th rowspan="2">សកម្មភាព</th><th colspan="${cl().months.length}">កាលវិភាគ</th></tr><tr>${cl().months.map(m=>`<th>${esc(m)}</th>`).join('')}</tr></thead><tbody>${tb}</tbody></table>
+    <div class="sign"><div class="sg">
+    <div class="c" style="grid-area:1/2">${esc(i.lunar)}</div>
+    <div class="c" style="grid-area:2/2">${esc(i.signDate)}</div>
+    <div class="c bd" style="grid-area:3/1">ឯកភាពដោយ</div>
+    <div class="c bd" style="grid-area:3/2">នាយកសាលា</div>
+    <div class="c bd" style="grid-area:4/1">គណៈកម្មការគ្រប់គ្រងសាលារៀន</div>
+    <div class="c bd" style="grid-area:5/1">ហត្ថលេខា</div>
+</div></div></section>
+  </div>`;
+}
+
+async function savePdf(btn){
+  if(!DL||!window.html2canvas||!window.jspdf){toast('មិនអាចបង្កើត PDF នៅទីនេះបានទេ');return}
+  const old=btn.textContent;btn.disabled=true;btn.textContent='កំពុងបង្កើត…';
+  const box=document.createElement('div');box.style.cssText='position:fixed;left:-10000px;top:0;width:794px;background:#fff';document.body.appendChild(box);
+  try{
+    await document.fonts.ready;
+    const pdf=new jspdf.jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
+    const pages=[...document.querySelectorAll('.pages .pg')];
+    for(let k=0;k<pages.length;k++){
+      const c=pages[k].cloneNode(true);c.classList.add('pgx');box.innerHTML='';box.appendChild(c);
+      await new Promise(r=>setTimeout(r,60));
+      const cv=await html2canvas(c,{scale:2,backgroundColor:'#ffffff',useCORS:true});
+      if(k)pdf.addPage();
+      pdf.addImage(cv.toDataURL('image/jpeg',.92),'JPEG',0,0,210,297);
+    }
+    await DL.save({filename:'kkt-'+String(cl().grade).replace(/[^\w-]/g,'')+'.pdf',data:pdf.output('blob')});
+    toast('បានរក្សាទុក PDF');
+  }catch(e){toast(e&&e.code=='declined'?'បានបោះបង់':'បង្កើត PDF មិនបានសម្រេច')}
+  finally{box.remove();btn.disabled=false;btn.textContent=old}
+}
+function render(){
+  head();
+  document.getElementById('app').innerHTML=({home:vHome,members:vMembers,plan:vPlan,meetings:vMeet,book:vBook,data:vData})[tab]();
+}
+function route(){const h=location.hash.slice(1);tab=TABS.some(t=>t[0]==h)?h:'home';editing=null;confirmId=null;render();scrollTo(0,0)}
+addEventListener('hashchange',route);
+
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');if(!b)return;
+  const a=b.dataset.a, id=+b.dataset.id;
+  if(a=='pdf'){savePdf(b);return}
+  if(a=='selCls'){S.cur=id;persist();editing=null;confirmId=null;toast('បានប្ដូរទៅថ្នាក់ '+cl().grade)}
+  else if(a=='delCls'){if(S.classes.length<2){toast('មិនអាចលុបថ្នាក់តែមួយគត់បានទេ')}else if(confirmId!='c'+id){confirmId='c'+id}else{
+    S.classes=S.classes.filter(c=>c.id!=id);if(!S.classes.some(c=>c.id==S.cur))S.cur=S.classes[0].id;confirmId=null;save(id);toast('បានលុបថ្នាក់')}}
+  else if(a=='fsConnect'){
+    const txt=document.getElementById('fbcfg').value.trim();let cfg=null;const m=txt.match(/\{[\s\S]*\}/);
+    if(m){try{cfg=JSON.parse(m[0])}catch(e){try{cfg=Function('"use strict";return ('+m[0]+')')()}catch(e2){}}}
+    if(!cfg||!cfg.projectId){toast('Firebase config មិនត្រឹមត្រូវ (ត្រូវមាន projectId)');return}
+    lsSet('kkt-fbcfg',JSON.stringify(cfg));lsSet('kkt-sid',(document.getElementById('sid').value.trim()||'default').replace(/[\/\s]/g,'-'));fsOff();fsInit();return}
+  else if(a=='fsPush'){if(FS.st!='on'){toast('សូមភ្ជាប់ Firestore ជាមុន');return}markAll();fsFlush().then(()=>toast('បានផ្ញើទិន្នន័យ'));return}
+  else if(a=='fsDisc'){fsOff();try{localStorage.removeItem('kkt-fbcfg')}catch(e){}FS.msg='';toast('បានផ្ដាច់')}
+  else
+  if(a=='newMem'){editing={t:'m',o:{sex:'ស្រី',cat:CATS[0],role:'សមាជិក'}}}
+  else if(a=='editMem'){editing={t:'m',o:cl().members.find(x=>x.id==id)}}
+  else if(a=='newMeet'){editing={t:'e',o:{}}}
+  else if(a=='editMeet'){editing={t:'e',o:cl().meetings.find(x=>x.id==id)}}
+  else if(a=='cancel'){editing=null}
+  else if(a=='cell'){const x=cl().acts.find(q=>q.id==id),i=b.dataset.i;x.c[i]=((x.c[i]||0)+1)%3;save()}
+  else if(a=='delMem'||a=='delAct'||a=='delMeet'||a=='reset'){
+    const k=a=='delMem'?'m'+id:a=='delAct'?'a'+id:a=='delMeet'?'e'+id:'reset';
+    if(confirmId!=k){confirmId=k}else{
+      if(a=='delMem')cl().members=cl().members.filter(x=>x.id!=id);
+      if(a=='delAct')cl().acts=cl().acts.filter(x=>x.id!=id);
+      if(a=='delMeet')cl().meetings=cl().meetings.filter(x=>x.id!=id);
+      if(a=='reset'){S=SEED();persist();markAll()}
+      confirmId=null;save();toast('បានអនុវត្ត')}
+  }
+  else if(a=='export'){
+    const s=JSON.stringify(S),t=document.getElementById('blob');t.value=s;t.select();
+    (navigator.clipboard?navigator.clipboard.writeText(s):Promise.reject()).then(()=>toast('បានចម្លងកូដ'),()=>toast('សូមចម្លងកូដដោយដៃ'));return}
+  else if(a=='import'){
+    try{const o=JSON.parse(document.getElementById('blob').value);
+      const n=normalize(o);if(!n||!n.classes.length)throw 0;
+      S=n;if(!S.classes.some(c=>c.id==S.cur))S.cur=S.classes[0].id;persist();markAll();fsSchedule();toast('នាំចូលបានជោគជ័យ')}catch(x){toast('កូដមិនត្រឹមត្រូវ');return}}
+  render();
+});
+document.addEventListener('submit',e=>{
+  e.preventDefault();const f=e.target,d=Object.fromEntries(new FormData(f));
+  if(f.id=='clsForm'){
+    const gs=new FormData(f).getAll('g'),ss=new FormData(f).getAll('s');
+    if(!gs.length||!ss.length){toast('សូមជ្រើសកម្រិតថ្នាក់ និងក្រុមយ៉ាងហោចណាស់មួយ');return}
+    const made=[],tpl=cl();
+    gs.forEach(g=>ss.forEach(s=>{const nm=g+s;if(S.classes.some(c=>c.grade.toUpperCase()==nm))return;
+      const c={id:nid(S.classes),grade:nm,cover:'',members:[],months:[...tpl.months],acts:ACTS_T(),meetings:[]};S.classes.push(c);made.push(c.id)}));
+    if(!made.length){toast('ថ្នាក់ទាំងនោះមានរួចហើយ');return}
+    S.cur=made[0];save(...made);toast('បានបង្កើត '+kh(made.length)+' ថ្នាក់');render();return}
+  if(f.id=='infoForm'){const {grade,cover,...rest}=d;S.info={...S.info,...rest};const c=cl();if(grade&&grade.trim())c.grade=grade.trim();c.cover=cover||'';save();toast('បានរក្សាទុក');render();return}
+  if(f.id=='memForm'){
+    const o={photo:d.photo,name:d.name.trim(),sex:d.sex,age:parseInt(en(d.age))||'',cat:d.cat,role:d.role,job:d.jobSel=='ផ្សេងៗ'?(d.jobOther||'').trim():d.jobSel,task:d.taskSel=='ផ្សេងៗ'?(d.taskOther||'').trim():d.taskSel};
+    if(f.dataset.id)Object.assign(cl().members.find(x=>x.id==f.dataset.id),o);else cl().members.push({id:nid(cl().members),...o});
+    editing=null;save();toast('បានរក្សាទុក');render();return}
+  if(f.id=='meetForm'){
+    const o={date:d.date,n:parseInt(en(d.n))||'',topic:d.topic.trim(),notes:d.notes,decision:d.decision};
+    if(f.dataset.id)Object.assign(cl().meetings.find(x=>x.id==f.dataset.id),o);else cl().meetings.push({id:nid(cl().meetings),...o});
+    editing=null;save();toast('បានរក្សាទុក');render();return}
+  if(f.id=='actForm'){cl().acts.push({id:nid(cl().acts),t:d.t.trim(),c:{}});save();render();return}
+  if(f.id=='monForm'){const m=d.m.split(/[,،]/).map(x=>x.trim()).filter(Boolean).slice(0,14);if(m.length){cl().months=m;cl().acts.forEach(a=>a.c={});save();toast('បានប្ដូរខែ ហើយសម្អាតប្រអប់')}render()}
+});
+function fillDates(){
+  const g=document.getElementById('signG'),hint=document.getElementById('signHint');if(!g)return;
+  const p=khParseDate(g.value);
+  if(!p){if(hint)hint.style.color=g.value.trim()?'var(--warn)':'';if(hint&&g.value.trim())hint.textContent='ទម្រង់កាលបរិច្ឆេទមិនត្រឹមត្រូវ។ សូមបញ្ចូលដូច 19/11/2026';return}
+  const r=khDates(p.y,p.m,p.d,document.getElementById('fPlace').value.trim()||'កណ្តៀង');
+  document.getElementById('fLunar').value=r.lunarLine;document.getElementById('fSign').value=r.solarLine;
+  hint.style.color='var(--ok)';hint.textContent='បានបំពេញស្វ័យប្រវត្តិ៖ '+r.lunarLine+' · '+r.solarLine;
+}
+document.addEventListener('input',e=>{if(e.target.id=='signG'||e.target.id=='fPlace')fillDates()});
+document.addEventListener('change',e=>{
+  if(e.target.id=='clsSel'){S.cur=+e.target.value;persist();editing=null;confirmId=null;render();return}
+  if(e.target.id=='taskSel'){document.getElementById('taskOtherL').hidden=e.target.value!='ផ្សេងៗ'}
+  if(e.target.id=='jobSel'){document.getElementById('jobOtherL').hidden=e.target.value!='ផ្សេងៗ'}
+  const f=e.target;if(!f.dataset||!f.dataset.up||!f.files[0])return;
+  const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{
+    const k=Math.min(1,+f.dataset.max/Math.max(im.width,im.height)),c=document.createElement('canvas');
+    c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+    f.parentElement.querySelector('input[type=hidden]').value=c.toDataURL('image/jpeg',.8);toast('បានជ្រើសរូប សូមចុចរក្សាទុក')};
+    im.onerror=()=>toast('ឯកសាររូបភាពមិនត្រឹមត្រូវ');im.src=r.result};r.readAsDataURL(f.files[0]);
+});
+load();route();fsInit();
+</script>

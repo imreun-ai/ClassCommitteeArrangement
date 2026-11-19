@@ -507,8 +507,8 @@ document.addEventListener('click',e=>{
   else if(a=='delCls'){if(S.classes.length<2){toast('មិនអាចលុបថ្នាក់តែមួយគត់បានទេ')}else if(confirmId!='c'+id){confirmId='c'+id}else{
     S.classes=S.classes.filter(c=>c.id!=id);if(!S.classes.some(c=>c.id==S.cur))S.cur=S.classes[0].id;confirmId=null;save(id);toast('បានលុបថ្នាក់')}}
   else if(a=='fsConnect'){
-    const txt=document.getElementById('fbcfg').value.trim();let cfg=null;const m=txt.match(/\{[\s\S]*\}/);
-    if(m){try{cfg=JSON.parse(m[0])}catch(e){try{cfg=Function('"use strict";return ('+m[0]+')')()}catch(e2){}}}
+    const txt=document.getElementById('fbcfg').value.trim();let cfg={};
+    for(const m of txt.matchAll(/["']?([A-Za-z]\w*)["']?\s*:\s*["']([^"']+)["']/g))cfg[m[1]]=m[2];
     if(!cfg||!cfg.projectId){toast('Firebase config មិនត្រឹមត្រូវ (ត្រូវមាន projectId)');return}
     lsSet('kkt-fbcfg',JSON.stringify(cfg));lsSet('kkt-sid',(document.getElementById('sid').value.trim()||'default').replace(/[\/\s]/g,'-'));fsOff();fsInit();return}
   else if(a=='fsPush'){if(FS.st!='on'){toast('សូមភ្ជាប់ Firestore ជាមុន');return}markAll();fsFlush().then(()=>toast('បានផ្ញើទិន្នន័យ'));return}

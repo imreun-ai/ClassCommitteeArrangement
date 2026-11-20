@@ -271,6 +271,20 @@ async function fsInit(){
     fsListen(ref);
   }catch(e){FS.st='error';console.error(e);FS.msg=(e.code?'['+e.code+'] ':'')+(e.message=='blocked'||e.message=='timeout'?'មិនអាចទាញ Firebase បានទេ។ ទំព័រនេះប្រហែលមិនអនុញ្ញាតការភ្ជាប់ទៅ Google ឬគ្មានអ៊ីនធឺណិត។':e.code=='unavailable'?'ភ្ជាប់ទៅ Firestore មិនបាន។ សូមពិនិត្យ៖ (១) បានបង្កើត Firestore Database ក្នុង Firebase Console ហើយឬនៅ (២) ប្រព័ន្ធបិទការផ្សាយពាណិជ្ជកម្ម ឬ VPN មិនរារាំង firestore.googleapis.com (៣) អ៊ីនធឺណិតដំណើរការ។':e.code=='permission-denied'?'Firestore បដិសេធសិទ្ធិ (ពិនិត្យ Security Rules)':(e.message||'កំហុស'))}
   badge();safeRender();
+  if(FS.st=='error'&&FS.msg.includes('unavailable'))fsDiag().then(t=>{FS.msg+=' · លទ្ធផលពិនិត្យ៖ '+t;safeRender()});
+}
+async function fsDiag(){
+  const c=fbCfg();if(!c||!c.projectId)return'មិនមាន Firebase config';
+  const u='https://firestore.googleapis.com/v1/projects/'+encodeURIComponent(c.projectId)+'/databases/(default)/documents/kkt_schools?pageSize=1&key='+encodeURIComponent(c.apiKey||'');
+  try{const r=await fetch(u);let j={};try{j=await r.json()}catch(e){}
+    const em=(j.error&&j.error.message)||'',st=(j.error&&j.error.status)||'';
+    if(r.ok)return'✔ ទៅដល់ Firestore បាន ហើយ database និងសិទ្ធិអានដំណើរការ។ បញ្ហាគឺការភ្ជាប់បែបបន្តផ្ទាល់ (WebChannel) ត្រូវបានរារាំងដោយបណ្ដាញ ឬកម្មវិធី។ សូមសាកល្បងបណ្ដាញផ្សេង ឬបិទ AdBlock/VPN។';
+    if(/SERVICE_DISABLED|has not been used|is disabled/i.test(em+st))return'✘ Cloud Firestore API មិនទាន់បើកសម្រាប់ project នេះ។ សូមបើកក្នុង Google Cloud Console → APIs → Cloud Firestore API → Enable ហើយរង់ចាំ ២ នាទី។';
+    if(r.status==404||/does not exist|NOT_FOUND/i.test(em+st))return'✘ មិនទាន់បង្កើត Firestore Database ឈ្មោះ (default)។ ក្នុង Firebase Console → Firestore Database ចុច «Create database» ។';
+    if(r.status==403||st=='PERMISSION_DENIED')return'✔ Database មានហើយ ប៉ុន្តែ Security Rules បដិសេធ។ សូមបិទភ្ជាប់ Rules ហើយចុច Publish។';
+    if(r.status==400||/API key/i.test(em))return'✘ apiKey មិនត្រឹមត្រូវ ឬត្រូវបានដាក់កំហិត (API key restrictions)។ '+em;
+    return'✘ HTTP '+r.status+' '+st+' '+em;
+  }catch(e){return'✘ ទៅដល់ firestore.googleapis.com មិនបាន (បណ្ដាញ VPN AdBlock ឬ firewall រារាំង) ឬគ្មានអ៊ីនធឺណិត។'}
 }
 function fsOff(){FS.unsub.forEach(f=>f());FS.unsub=[];FS.st='off';FS.db=null;badge()}
 
@@ -417,7 +431,8 @@ function vData(){
   ${FS.msg?`<p class="note" style="color:var(--warn)">${esc(FS.msg)}</p>`:''}
   <label style="margin-top:8px">Firebase config (បិទភ្ជាប់ពី Firebase Console → Project settings → Your apps)<textarea id="fbcfg" style="font-family:monospace;font-size:12px;min-height:110px" placeholder='{ "apiKey": "...", "authDomain": "...", "projectId": "...", "appId": "..." }'>${esc(lsGet('kkt-fbcfg')||'')}</textarea></label>
   <label style="margin-top:8px">លេខកូដសាលា (ឲ្យអ្នកប្រើដូចគ្នាប្រើកូដដូចគ្នា)<input id="sid" value="${esc(lsGet('kkt-sid')||'default')}"></label>
-  <div class="row" style="justify-content:flex-start;margin-top:12px"><button class="pri" data-a="fsConnect">ភ្ជាប់ Firestore</button><button data-a="fsPush">ផ្ញើទិន្នន័យក្នុងម៉ាស៊ីនទៅ Firestore (សរសេរជាន់)</button><button class="dng" data-a="fsDisc">ផ្ដាច់</button></div>
+  <div class="row" style="justify-content:flex-start;margin-top:12px"><button class="pri" data-a="fsConnect">ភ្ជាប់ Firestore</button><button data-a="fsPush">ផ្ញើទិន្នន័យក្នុងម៉ាស៊ីនទៅ Firestore (សរសេរជាន់)</button><button data-a="fsDiag">ពិនិត្យការភ្ជាប់</button><button class="dng" data-a="fsDisc">ផ្ដាច់</button></div>
+  <p class="note" id="diagOut" style="white-space:pre-wrap"></p>
   <p class="note">ការភ្ជាប់លើកដំបូង៖ បើ Firestore ទទេ ទិន្នន័យក្នុងម៉ាស៊ីននឹងត្រូវបានផ្ញើឡើង។ បើមានទិន្នន័យរួចហើយ ទិន្នន័យពី Firestore នឹងជំនួសទិន្នន័យក្នុងម៉ាស៊ីននេះ។ ទិន្នន័យថ្នាក់ត្រូវរក្សាទុកដាច់ដោយឡែកតាមថ្នាក់ ហើយការកែព្រមគ្នាលើថ្នាក់តែមួយ ការរក្សាទុកក្រោយបំផុតឈ្នះ។</p>
   <p class="note">Security Rules សម្រាប់សាកល្បង (ទុកឲ្យអ្នកដែលស្គាល់ project អាន/សរសេរបាន ហើយមិនត្រូវប្រើសម្រាប់ទិន្នន័យសំខាន់)៖</p>
   <pre class="rules">rules_version = '2';
@@ -511,6 +526,7 @@ document.addEventListener('click',e=>{
     for(const m of txt.matchAll(/["']?([A-Za-z]\w*)["']?\s*:\s*["']([^"']+)["']/g))cfg[m[1]]=m[2];
     if(!cfg||!cfg.projectId){toast('Firebase config មិនត្រឹមត្រូវ (ត្រូវមាន projectId)');return}
     lsSet('kkt-fbcfg',JSON.stringify(cfg));lsSet('kkt-sid',(document.getElementById('sid').value.trim()||'default').replace(/[\/\s]/g,'-'));fsOff();fsInit();return}
+  else if(a=='fsDiag'){const o=document.getElementById('diagOut');o.textContent='កំពុងពិនិត្យ…';fsDiag().then(t=>{o.textContent=t});return}
   else if(a=='fsPush'){if(FS.st!='on'){toast('សូមភ្ជាប់ Firestore ជាមុន');return}markAll();fsFlush().then(()=>toast('បានផ្ញើទិន្នន័យ'));return}
   else if(a=='fsDisc'){fsOff();try{localStorage.removeItem('kkt-fbcfg')}catch(e){}FS.msg='';toast('បានផ្ដាច់')}
   else

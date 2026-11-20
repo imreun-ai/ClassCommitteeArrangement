@@ -202,7 +202,7 @@ function mkState(o){const info={...o.info};const grade=info.grade||'',cover=info
 const SEED=()=>{const o=SEED0();o.members=[];o.info={...o.info,cover:'',principal:'',lunar:'',signDate:'',signG:''};return mkState(o)};
 const ACTS_T=()=>SEED0().acts.map(a=>({...a,c:{}}));
 function cl(){return S.classes.find(c=>c.id==S.cur)||S.classes[0]}
-const FB_CONFIG=null; /* ដាក់ Firebase config នៅទីនេះ ប្រសិនបើចង់ឲ្យគ្រប់អ្នកប្រើភ្ជាប់ Firestore ដោយស្វ័យប្រវត្តិ */
+const FB_CONFIG={apiKey:"AIzaSyD01YHN5X-WRbPdQxQn52ly17jgL-bhat4",authDomain:"classcommittee-18ea7.firebaseapp.com",projectId:"classcommittee-18ea7",storageBucket:"classcommittee-18ea7.firebasestorage.app",messagingSenderId:"960022321269",appId:"1:960022321269:web:fe0ac62769552fb074403c",measurementId:"G-9664Y0PFEH"}; /* ដាក់ Firebase config នៅទីនេះ ប្រសិនបើចង់ឲ្យគ្រប់អ្នកប្រើភ្ជាប់ Firestore ដោយស្វ័យប្រវត្តិ */
 const TABS=[['home','ទិដ្ឋភាពទូទៅ'],['members','សមាជិក'],['plan','ផែនការប្រចាំឆ្នាំ'],['meetings','កិច្ចប្រជុំ'],['book','សៀវភៅ (បោះពុម្ព)'],['data','ទិន្នន័យ']];
 const CATS=['មាតាបិតា','ក្រុមប្រឹក្សាកុមារយុវជន','គ្រូបន្ទុកថ្នាក់'];
 const TASKS=['ទទួលបន្ទុកមើលការខុសត្រូវប្រតិបត្តិការរួម ក្នុងការធ្វើផែនការ និងអនុវត្តផែនការកែលម្អថ្នាក់រៀន ដើម្បីធានាបានសិស្សរៀនចេះ។','ទទួលការងារផែនការ និងរបាយការណ៍កែលម្អថ្នាក់រៀន។','ទទួលការងារហិរញ្ញវត្ថុ និងធនធានសម្រាប់កែលម្អថ្នាក់រៀន។','ទទួលការងារប្រជុំពិនិត្យតាមដានប្រចាំខែ។','ទទួលទិន្នន័យរដ្ឋបាលថ្នាក់រៀន។','ទទួលការជួយសិស្សមកពីគ្រួសារជួបការលំបាក និងមានអំពើហឹង្សា។','ទទួលការគ្រប់គ្រងបរិស្ថានថ្នាក់រៀន និងសាលារៀន។','ផ្សេងៗ'];
@@ -269,7 +269,7 @@ async function fsInit(){
     FS.st='on';
     if(!snap.exists){markAll();await fsFlush()}else{await fsPull(ref)}
     fsListen(ref);
-  }catch(e){FS.st='error';FS.msg=e.message=='blocked'||e.message=='timeout'?'មិនអាចទាញ Firebase បានទេ។ ទំព័រនេះប្រហែលមិនអនុញ្ញាតការភ្ជាប់ទៅ Google ឬគ្មានអ៊ីនធឺណិត។':e.code=='permission-denied'?'Firestore បដិសេធសិទ្ធិ (ពិនិត្យ Security Rules)':(e.message||'កំហុស')}
+  }catch(e){FS.st='error';console.error(e);FS.msg=(e.code?'['+e.code+'] ':'')+(e.message=='blocked'||e.message=='timeout'?'មិនអាចទាញ Firebase បានទេ។ ទំព័រនេះប្រហែលមិនអនុញ្ញាតការភ្ជាប់ទៅ Google ឬគ្មានអ៊ីនធឺណិត។':e.code=='permission-denied'?'Firestore បដិសេធសិទ្ធិ (ពិនិត្យ Security Rules)':(e.message||'កំហុស'))}
   badge();safeRender();
 }
 function fsOff(){FS.unsub.forEach(f=>f());FS.unsub=[];FS.st='off';FS.db=null;badge()}

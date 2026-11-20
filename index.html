@@ -109,7 +109,7 @@ td.act{text-align:left;min-width:260px}
 .vl{width:2px;height:3%;background:#1d3a78;min-height:10px}
 .ob{background:#0b2a6f;color:#fff;border-radius:3px;padding:5px;text-align:center;flex:1;max-width:19%;display:flex;flex-direction:column;gap:1px;font-size:.75em;line-height:1.5}
 .lvl:not(:last-child) .ob{max-width:24%}
-.ob img,.noimg{width:100%;aspect-ratio:3/4;object-fit:cover;background:#fff;border-radius:2px}
+.ob img,.noimg{width:66%;margin:0 auto;aspect-ratio:3/4;object-fit:cover;background:#fff;border-radius:2px}
 .ob small{opacity:.85}
 .pur{color:#7030a0}
 .para{text-indent:2em;margin:0 0 .6em;text-align:justify}
@@ -143,6 +143,11 @@ td.act{text-align:left;min-width:260px}
 .cv .tb{position:absolute;left:10.3%;width:79.4%;top:36.5%;height:7.5%;box-sizing:border-box;background:#fefbea;border:1.5px solid #ac5515;border-radius:8px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;color:#653c7b;font-size:1.08em;line-height:1.55}
 .cv .ph{position:absolute;left:23.5%;width:52.7%;top:51.1%;height:34.7%;box-sizing:border-box;border:2px solid #283973;border-radius:6px;object-fit:cover;display:block}
 .cv .yr2{position:absolute;left:0;right:0;bottom:4.2%;text-align:center;color:#184e75;font-size:1.12em}
+
+/* ទំព័រ ២៖ ឈ្មោះ Khmer OS Muol 14pt · ទំព័រ ៣៖ អក្សរ 12pt (1pt=1.333px, ទំព័រ A4=794px, ផ្ទៃ 16.5px) */
+.ob b{font-family:'Khmer OS Muol','Moul','Noto Sans Khmer',serif;font-weight:400;font-size:1.51em;line-height:1.5}
+.ob span,.ob small{font-size:1.1em}
+.pg.p3 .para{font-size:.97em}.pg.p3 .bm{font-size:.97em;line-height:1.5;margin-bottom:.45em}.pg.p3 .para{line-height:1.6;margin-bottom:.4em}.pg.p3.pgx{padding-top:48px;padding-bottom:40px}
 </style>
 
 <header><div class="in hd"><img id="hLogo" alt="" hidden>
@@ -457,7 +462,7 @@ function vBook(){
     <div class="blue moul c">គណៈកម្មការគ្រប់គ្រងថ្នាក់រៀន<br>ថ្នាក់ទី “${esc(cl().grade)}”<br>ឆ្នាំសិក្សា ${esc(i.year)}<br>រចនាសម្ព័ន្ធគណៈកម្មការថ្នាក់រៀន</div>
     <div class="chart"><div class="lvl">${box(pres)}</div><div class="vl"></div><div class="lvl">${box(dep)}</div><div class="vl"></div>
     <div class="lvl">${rest.map(box).join('')}</div></div></section>
-  <section class="pg pur"><p class="para">គណៈកម្មការគ្រប់គ្រង ថ្នាក់ទី “${esc(cl().grade)}” ${esc(i.school)} មានសមាសភាពចំនួន${kh(cl().members.length)}រូប ក្នុងនោះមានតំណាងមាតាបិតាចំនួន${kh(cnt(CATS[0]))}រូប ក្រុមប្រឹក្សាកុមារយុវជន${kh(cnt(CATS[1]))}នាក់ និងគ្រូបន្ទុកថ្នាក់${kh(cnt(CATS[2]))}រូប។ គណៈកម្មការគ្រប់គ្រងថ្នាក់រៀន គឺជាតំណាងឱ្យមាតាបិតា និងអ្នកអាណាព្យាបាលសិស្សក្នុងថ្នាក់ទាំងអស់ក្នុងការដឹកនាំ និងគ្រប់គ្រងសកម្មភាពរៀនរបស់សិស្ស ការបង្រៀនរបស់គ្រូ និងការកែលម្អបរិស្ថានថ្នាក់រៀន។</p>
+  <section class="pg pur p3"><p class="para">គណៈកម្មការគ្រប់គ្រង ថ្នាក់ទី “${esc(cl().grade)}” ${esc(i.school)} មានសមាសភាពចំនួន${kh(cl().members.length)}រូប ក្នុងនោះមានតំណាងមាតាបិតាចំនួន${kh(cnt(CATS[0]))}រូប ក្រុមប្រឹក្សាកុមារយុវជន${kh(cnt(CATS[1]))}នាក់ និងគ្រូបន្ទុកថ្នាក់${kh(cnt(CATS[2]))}រូប។ គណៈកម្មការគ្រប់គ្រងថ្នាក់រៀន គឺជាតំណាងឱ្យមាតាបិតា និងអ្នកអាណាព្យាបាលសិស្សក្នុងថ្នាក់ទាំងអស់ក្នុងការដឹកនាំ និងគ្រប់គ្រងសកម្មភាពរៀនរបស់សិស្ស ការបង្រៀនរបស់គ្រូ និងការកែលម្អបរិស្ថានថ្នាក់រៀន។</p>
     <p class="para"><b>សមាសភាពទាំង ${kh(cl().members.length)} រូប មាន៖</b></p>${mem}</section>
   <section class="pg pur"><div class="moul c plt">តារាងផែនការសកម្មភាពប្រចាំឆ្នាំ</div>
     <table class="pt"><thead><tr><th rowspan="2">សកម្មភាព</th><th colspan="${cl().months.length}">កាលវិភាគ</th></tr><tr>${cl().months.map(m=>`<th>${esc(m)}</th>`).join('')}</tr></thead><tbody>${tb}</tbody></table>

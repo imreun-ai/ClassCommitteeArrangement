@@ -135,7 +135,7 @@ td.act{text-align:left;min-width:260px}
   <small>ព្រះរាជាណាចក្រកម្ពុជា · ជាតិ សាសនា ព្រះមហាក្សត្រ</small>
   <h1 id="hTitle">សៀវភៅគណៈគ្រប់គ្រងថ្នាក់រៀន (គគថ)</h1>
   <small id="hSub"></small>
-  <div class="hcls"><label>ថ្នាក់៖ <select id="clsSel"></select></label><span id="fsBadge" class="fsb"></span></div>
+  <div class="hcls"><label>ថ្នាក់៖ <select id="clsSel"></select></label></div>
 </div></div></header>
 <nav><div class="in" id="nav"></div></nav>
 <div class="wrap"><main id="app"></main></div>
@@ -202,9 +202,6 @@ function mkState(o){const info={...o.info};const grade=info.grade||'',cover=info
 const SEED=()=>{const o=SEED0();o.members=[];o.info={...o.info,cover:'',principal:'',lunar:'',signDate:'',signG:''};return mkState(o)};
 const ACTS_T=()=>SEED0().acts.map(a=>({...a,c:{}}));
 function cl(){return S.classes.find(c=>c.id==S.cur)||S.classes[0]}
-const FB_DBID='classcommittee'; /* ឈ្មោះ Firestore database (ទុក null ប្រសិនបើជា (default)) */
-const fbDbId=()=>lsGet('kkt-dbid')||FB_DBID||'(default)';
-const FB_CONFIG={apiKey:"AIzaSyD01YHN5X-WRbPdQxQn52ly17jgL-bhat4",authDomain:"classcommittee-18ea7.firebaseapp.com",projectId:"classcommittee-18ea7",storageBucket:"classcommittee-18ea7.firebasestorage.app",messagingSenderId:"960022321269",appId:"1:960022321269:web:fe0ac62769552fb074403c",measurementId:"G-9664Y0PFEH"}; /* ដាក់ Firebase config នៅទីនេះ ប្រសិនបើចង់ឲ្យគ្រប់អ្នកប្រើភ្ជាប់ Firestore ដោយស្វ័យប្រវត្តិ */
 const TABS=[['home','ទិដ្ឋភាពទូទៅ'],['members','សមាជិក'],['plan','ផែនការប្រចាំឆ្នាំ'],['meetings','កិច្ចប្រជុំ'],['book','សៀវភៅ (បោះពុម្ព)'],['data','ទិន្នន័យ']];
 const CATS=['មាតាបិតា','ក្រុមប្រឹក្សាកុមារយុវជន','គ្រូបន្ទុកថ្នាក់'];
 const TASKS=['ទទួលបន្ទុកមើលការខុសត្រូវប្រតិបត្តិការរួម ក្នុងការធ្វើផែនការ និងអនុវត្តផែនការកែលម្អថ្នាក់រៀន ដើម្បីធានាបានសិស្សរៀនចេះ។','ទទួលការងារផែនការ និងរបាយការណ៍កែលម្អថ្នាក់រៀន។','ទទួលការងារហិរញ្ញវត្ថុ និងធនធានសម្រាប់កែលម្អថ្នាក់រៀន។','ទទួលការងារប្រជុំពិនិត្យតាមដានប្រចាំខែ។','ទទួលទិន្នន័យរដ្ឋបាលថ្នាក់រៀន។','ទទួលការជួយសិស្សមកពីគ្រួសារជួបការលំបាក និងមានអំពើហឹង្សា។','ទទួលការគ្រប់គ្រងបរិស្ថានថ្នាក់រៀន និងសាលារៀន។','ផ្សេងៗ'];
@@ -227,68 +224,7 @@ const SEED0=()=>({
 let DL=null;
 try{window.claude.use('downloads').then(d=>{DL=d;if(tab=='book')render()},()=>{})}catch(e){}
 
-/* ===== Firestore (ត្រូវការទំព័រដែលអនុញ្ញាតឲ្យភ្ជាប់ Google ដូចជា GitHub Pages) ===== */
-const FS={st:'off',msg:'',db:null,sid:'default',dirty:new Set(),t:null,unsub:[],order:[]};
-const FBV='https://www.gstatic.com/firebasejs/10.14.1/';
-function fbCfg(){if(FB_CONFIG)return FB_CONFIG;try{return JSON.parse(lsGet('kkt-fbcfg')||'null')}catch(e){return null}}
-function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('blocked'));document.head.appendChild(s);setTimeout(()=>rej(new Error('timeout')),10000)})}
-const clean=o=>JSON.parse(JSON.stringify(o));
-function badge(){const b=document.getElementById('fsBadge');if(!b)return;
-  b.textContent=FS.st=='on'?'☁ Firestore':FS.st=='loading'?'☁ កំពុងភ្ជាប់…':FS.st=='error'?'☁ មិនភ្ជាប់':'ក្នុងម៉ាស៊ីន';b.dataset.st=FS.st}
 function safeRender(){if(editing||(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('form')))return;render()}
-function fsSchedule(){if(FS.st!='on')return;clearTimeout(FS.t);FS.t=setTimeout(fsFlush,700)}
-async function fsFlush(){
-  if(!FS.db||FS.st!='on')return;const ids=[...FS.dirty];FS.dirty.clear();if(!ids.length)return;
-  const base=FS.db.collection('kkt_schools').doc(FS.sid),b=FS.db.batch();
-  b.set(base,clean({info:S.info,order:S.classes.map(c=>c.id),updated:Date.now()}));
-  for(const id of ids){if(id=='info')continue;const c=S.classes.find(x=>x.id==id),r=base.collection('classes').doc(String(id));
-    if(c){if(JSON.stringify(c).length>950000)toast('ថ្នាក់ '+c.grade+' មានរូបភាពធំពេក (លើស ១MB) សូមបន្ថយរូបថត');b.set(r,clean(c))}else b.delete(r)}
-  try{await b.commit()}catch(e){FS.st='error';FS.msg=e.code=='permission-denied'?'Firestore បដិសេធសិទ្ធិ (ពិនិត្យ Security Rules)':(e.message||'កំហុស');badge();toast('រក្សាទុកក្នុង Firestore មិនបាន')}
-}
-async function fsPull(ref){
-  const ds=await ref.get(),d=ds.data(),qs=await ref.collection('classes').get();
-  const cs=qs.docs.map(x=>x.data());FS.order=d.order||[];
-  cs.sort((a,b)=>FS.order.indexOf(a.id)-FS.order.indexOf(b.id));
-  S.info=d.info||S.info;if(cs.length)S.classes=cs;if(!S.classes.some(c=>c.id==S.cur))S.cur=S.classes[0].id;persist()}
-function fsListen(ref){
-  FS.unsub.forEach(f=>f());FS.unsub=[];
-  FS.unsub.push(ref.onSnapshot(ds=>{if(ds.metadata.hasPendingWrites||!ds.exists)return;const d=ds.data();FS.order=d.order||FS.order;
-    if(JSON.stringify(d.info)!==JSON.stringify(S.info)){S.info=d.info;persist();safeRender()}}));
-  FS.unsub.push(ref.collection('classes').onSnapshot(qs=>{if(qs.metadata.hasPendingWrites)return;let ch=false;
-    qs.docChanges().forEach(c=>{const x=c.doc.data(),i=S.classes.findIndex(k=>k.id==x.id);
-      if(c.type=='removed'){if(i>=0&&S.classes.length>1){S.classes.splice(i,1);ch=true}}
-      else if(i<0){S.classes.push(x);ch=true}else if(JSON.stringify(S.classes[i])!==JSON.stringify(x)){S.classes[i]=x;ch=true}});
-    if(ch){S.classes.sort((a,b)=>FS.order.indexOf(a.id)-FS.order.indexOf(b.id));if(!S.classes.some(c=>c.id==S.cur))S.cur=S.classes[0].id;persist();safeRender()}}));
-}
-async function fsInit(){
-  const cfg=fbCfg();if(!cfg||!cfg.projectId){FS.st='off';badge();return}
-  FS.sid=lsGet('kkt-sid')||'default';FS.st='loading';FS.msg='';badge();
-  try{
-    if(!window.firebase){await loadScript(FBV+'firebase-app-compat.js');await loadScript(FBV+'firebase-firestore-compat.js')}
-    if(!firebase.apps.length)firebase.initializeApp(cfg);
-    const dbid=fbDbId();FS.db=(dbid&&dbid!='(default)')?firebase.app().firestore(dbid):firebase.firestore();try{FS.db.settings({experimentalAutoDetectLongPolling:true})}catch(x){}
-    const ref=FS.db.collection('kkt_schools').doc(FS.sid),snap=await ref.get();
-    FS.st='on';
-    if(!snap.exists){markAll();await fsFlush()}else{await fsPull(ref)}
-    fsListen(ref);
-  }catch(e){FS.st='error';console.error(e);FS.msg=(e.code?'['+e.code+'] ':'')+(e.message=='blocked'||e.message=='timeout'?'មិនអាចទាញ Firebase បានទេ។ ទំព័រនេះប្រហែលមិនអនុញ្ញាតការភ្ជាប់ទៅ Google ឬគ្មានអ៊ីនធឺណិត។':e.code=='unavailable'?'ភ្ជាប់ទៅ Firestore មិនបាន។ សូមពិនិត្យ៖ (១) បានបង្កើត Firestore Database ក្នុង Firebase Console ហើយឬនៅ (២) ប្រព័ន្ធបិទការផ្សាយពាណិជ្ជកម្ម ឬ VPN មិនរារាំង firestore.googleapis.com (៣) អ៊ីនធឺណិតដំណើរការ។':e.code=='permission-denied'?'Firestore បដិសេធសិទ្ធិ (ពិនិត្យ Security Rules)':(e.message||'កំហុស'))}
-  badge();safeRender();
-  if(FS.st=='error'&&FS.msg.includes('unavailable'))fsDiag().then(t=>{FS.msg+=' · លទ្ធផលពិនិត្យ៖ '+t;safeRender()});
-}
-async function fsDiag(){
-  const c=fbCfg();if(!c||!c.projectId)return'មិនមាន Firebase config';
-  const u='https://firestore.googleapis.com/v1/projects/'+encodeURIComponent(c.projectId)+'/databases/'+encodeURIComponent(fbDbId())+'/documents/kkt_schools?pageSize=1&key='+encodeURIComponent(c.apiKey||'');
-  try{const r=await fetch(u);let j={};try{j=await r.json()}catch(e){}
-    const em=(j.error&&j.error.message)||'',st=(j.error&&j.error.status)||'';
-    if(r.ok)return'✔ ទៅដល់ Firestore បាន ហើយ database និងសិទ្ធិអានដំណើរការ។ បញ្ហាគឺការភ្ជាប់បែបបន្តផ្ទាល់ (WebChannel) ត្រូវបានរារាំងដោយបណ្ដាញ ឬកម្មវិធី។ សូមសាកល្បងបណ្ដាញផ្សេង ឬបិទ AdBlock/VPN។';
-    if(/SERVICE_DISABLED|has not been used|is disabled/i.test(em+st))return'✘ Cloud Firestore API មិនទាន់បើកសម្រាប់ project នេះ។ សូមបើកក្នុង Google Cloud Console → APIs → Cloud Firestore API → Enable ហើយរង់ចាំ ២ នាទី។';
-    if(r.status==404||/does not exist|NOT_FOUND/i.test(em+st))return'✘ រកមិនឃើញ Firestore Database ឈ្មោះ «'+fbDbId()+'»។ សូមពិនិត្យឈ្មោះ database (មើល URL ក្នុង Firebase Console: .../databases/ឈ្មោះ/...) ឬចុច «Create database» បើមិនទាន់បង្កើត។';
-    if(r.status==403||st=='PERMISSION_DENIED')return'✔ Database មានហើយ ប៉ុន្តែ Security Rules បដិសេធ។ សូមបិទភ្ជាប់ Rules ហើយចុច Publish។';
-    if(r.status==400||/API key/i.test(em))return'✘ apiKey មិនត្រឹមត្រូវ ឬត្រូវបានដាក់កំហិត (API key restrictions)។ '+em;
-    return'✘ HTTP '+r.status+' '+st+' '+em;
-  }catch(e){return'✘ ទៅដល់ firestore.googleapis.com មិនបាន (បណ្ដាញ VPN AdBlock ឬ firewall រារាំង) ឬគ្មានអ៊ីនធឺណិត។'}
-}
-function fsOff(){FS.unsub.forEach(f=>f());FS.unsub=[];FS.st='off';FS.db=null;badge()}
 
 let S, tab='home', editing=null, confirmId=null, fail=false;
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){fail=true;return null}};
@@ -300,8 +236,7 @@ function load(){
   S=o||SEED();if(!S.classes.length)S=SEED();
   const c=+lsGet('kkt-cur');if(S.classes.some(x=>x.id==c))S.cur=c;else S.cur=S.classes[0].id}
 function persist(){lsSet(KEY,JSON.stringify(S));lsSet('kkt-cur',S.cur)}
-function save(...ids){persist();FS.dirty.add('info');(ids.length?ids:[cl().id]).forEach(i=>FS.dirty.add(i));fsSchedule()}
-function markAll(){FS.dirty.add('info');S.classes.forEach(c=>FS.dirty.add(c.id))}
+function save(){persist()}
 const KH='០១២៣៤៥៦៧៨៩';
 const kh=n=>String(n).replace(/\d/g,d=>KH[d]);
 const en=s=>String(s).replace(/[០-៩]/g,d=>KH.indexOf(d));
@@ -317,7 +252,7 @@ function head(){
   document.getElementById('hTitle').textContent='សៀវភៅគណៈគ្រប់គ្រងថ្នាក់រៀន (គគថ) ថ្នាក់ទី '+kh(cl().grade);
   document.getElementById('hSub').textContent=i.school+' · ឆ្នាំសិក្សា '+i.year;
   document.title='ប្រព័ន្ធ គគថ '+cl().grade;const lg=document.getElementById('hLogo');lg.hidden=!i.logo;if(i.logo)lg.src=i.logo;
-  const sel=document.getElementById('clsSel');if(sel)sel.innerHTML=S.classes.map(c=>`<option value="${c.id}" ${c.id==cl().id?'selected':''}>ថ្នាក់ទី ${esc(c.grade)}</option>`).join('');badge();
+  const sel=document.getElementById('clsSel');if(sel)sel.innerHTML=S.classes.map(c=>`<option value="${c.id}" ${c.id==cl().id?'selected':''}>ថ្នាក់ទី ${esc(c.grade)}</option>`).join('');
   document.getElementById('nav').innerHTML=TABS.map(([k,l])=>`<a href="#${k}" ${k==tab?'aria-current="page"':''}>${l}</a>`).join('');
 }
 
@@ -428,25 +363,7 @@ function vData(){
   <label style="margin-top:12px">កូដទិន្នន័យ (ចម្លង ឬបិទភ្ជាប់)<textarea id="blob" style="min-height:160px;font-family:monospace;font-size:12px"></textarea></label>
   <div class="row" style="justify-content:flex-start;margin-top:12px"><button class="pri" data-a="export">បង្កើត និងចម្លងកូដ</button><button data-a="import">នាំចូលពីកូដ</button></div>
   <p class="note">ចែករំលែកប្រព័ន្ធ៖ ផ្ញើតំណនៃទំព័រនេះទៅអ្នកដទៃ ពួកគេនឹងមានប្រព័ន្ធទទេផ្ទាល់ខ្លួន។ ប្រសិនបើចង់ឲ្យពួកគេឃើញទិន្នន័យដូចអ្នក សូមផ្ញើកូដទិន្នន័យ ហើយឲ្យគេនាំចូល។</p></section>
-  <section class="panel"><h2>Firestore (ទិន្នន័យរួមគ្នា)</h2>
-  <p>ស្ថានភាព៖ <b id="fsStat">${FS.st=='on'?'ភ្ជាប់ហើយ':FS.st=='loading'?'កំពុងភ្ជាប់…':FS.st=='error'?'មិនភ្ជាប់':'មិនទាន់ភ្ជាប់ (ប្រើ Local Storage)'}</b></p>
-  ${FS.msg?`<p class="note" style="color:var(--warn)">${esc(FS.msg)}</p>`:''}
-  <label style="margin-top:8px">Firebase config (បិទភ្ជាប់ពី Firebase Console → Project settings → Your apps)<textarea id="fbcfg" style="font-family:monospace;font-size:12px;min-height:110px" placeholder='{ "apiKey": "...", "authDomain": "...", "projectId": "...", "appId": "..." }'>${esc(lsGet('kkt-fbcfg')||'')}</textarea></label>
-  <label style="margin-top:8px">ឈ្មោះ Firestore Database (មើលក្នុង URL ក្រោយ /databases/ ឬប្រអប់ជ្រើស database ក្នុង Firebase)<input id="dbid" value="${esc(fbDbId())}"></label>
-  <label style="margin-top:8px">លេខកូដសាលា (ឲ្យអ្នកប្រើដូចគ្នាប្រើកូដដូចគ្នា)<input id="sid" value="${esc(lsGet('kkt-sid')||'default')}"></label>
-  <div class="row" style="justify-content:flex-start;margin-top:12px"><button class="pri" data-a="fsConnect">ភ្ជាប់ Firestore</button><button data-a="fsPush">ផ្ញើទិន្នន័យក្នុងម៉ាស៊ីនទៅ Firestore (សរសេរជាន់)</button><button data-a="fsDiag">ពិនិត្យការភ្ជាប់</button><button class="dng" data-a="fsDisc">ផ្ដាច់</button></div>
-  <p class="note" id="diagOut" style="white-space:pre-wrap"></p>
-  <p class="note">ការភ្ជាប់លើកដំបូង៖ បើ Firestore ទទេ ទិន្នន័យក្នុងម៉ាស៊ីននឹងត្រូវបានផ្ញើឡើង។ បើមានទិន្នន័យរួចហើយ ទិន្នន័យពី Firestore នឹងជំនួសទិន្នន័យក្នុងម៉ាស៊ីននេះ។ ទិន្នន័យថ្នាក់ត្រូវរក្សាទុកដាច់ដោយឡែកតាមថ្នាក់ ហើយការកែព្រមគ្នាលើថ្នាក់តែមួយ ការរក្សាទុកក្រោយបំផុតឈ្នះ។</p>
-  <p class="note">Security Rules សម្រាប់សាកល្បង (ទុកឲ្យអ្នកដែលស្គាល់ project អាន/សរសេរបាន ហើយមិនត្រូវប្រើសម្រាប់ទិន្នន័យសំខាន់)៖</p>
-  <pre class="rules">rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /kkt_schools/{school}/{document=**} {
-      allow read, write: if true;
-    }
-  }
-}</pre></section>
-  <section class="panel"><h2>ចាប់ផ្ដើមឡើងវិញ</h2><p>លុបទិន្នន័យទាំងអស់ ហើយត្រឡប់ទៅទិន្នន័យដើមនៃថ្នាក់ 10B។</p>
+    <section class="panel"><h2>ចាប់ផ្ដើមឡើងវិញ</h2><p>លុបទិន្នន័យទាំងអស់ ហើយត្រឡប់ទៅទិន្នន័យដើមនៃថ្នាក់ 10B។</p>
   <button class="dng" data-a="reset">${confirmId=='reset'?'ចុចម្ដងទៀតដើម្បីបញ្ជាក់':'កំណត់ឡើងវិញ'}</button></section>`;
 }
 
@@ -524,14 +441,6 @@ document.addEventListener('click',e=>{
   if(a=='selCls'){S.cur=id;persist();editing=null;confirmId=null;toast('បានប្ដូរទៅថ្នាក់ '+cl().grade)}
   else if(a=='delCls'){if(S.classes.length<2){toast('មិនអាចលុបថ្នាក់តែមួយគត់បានទេ')}else if(confirmId!='c'+id){confirmId='c'+id}else{
     S.classes=S.classes.filter(c=>c.id!=id);if(!S.classes.some(c=>c.id==S.cur))S.cur=S.classes[0].id;confirmId=null;save(id);toast('បានលុបថ្នាក់')}}
-  else if(a=='fsConnect'){
-    const txt=document.getElementById('fbcfg').value.trim();let cfg={};
-    for(const m of txt.matchAll(/["']?([A-Za-z]\w*)["']?\s*:\s*["']([^"']+)["']/g))cfg[m[1]]=m[2];
-    if(!cfg||!cfg.projectId){toast('Firebase config មិនត្រឹមត្រូវ (ត្រូវមាន projectId)');return}
-    lsSet('kkt-fbcfg',JSON.stringify(cfg));lsSet('kkt-dbid',document.getElementById('dbid').value.trim()||'(default)');lsSet('kkt-sid',(document.getElementById('sid').value.trim()||'default').replace(/[\/\s]/g,'-'));fsOff();fsInit();return}
-  else if(a=='fsDiag'){const o=document.getElementById('diagOut');o.textContent='កំពុងពិនិត្យ…';fsDiag().then(t=>{o.textContent=t});return}
-  else if(a=='fsPush'){if(FS.st!='on'){toast('សូមភ្ជាប់ Firestore ជាមុន');return}markAll();fsFlush().then(()=>toast('បានផ្ញើទិន្នន័យ'));return}
-  else if(a=='fsDisc'){fsOff();try{localStorage.removeItem('kkt-fbcfg')}catch(e){}FS.msg='';toast('បានផ្ដាច់')}
   else
   if(a=='newMem'){editing={t:'m',o:{sex:'ស្រី',cat:CATS[0],role:'សមាជិក'}}}
   else if(a=='editMem'){editing={t:'m',o:cl().members.find(x=>x.id==id)}}
@@ -545,7 +454,7 @@ document.addEventListener('click',e=>{
       if(a=='delMem')cl().members=cl().members.filter(x=>x.id!=id);
       if(a=='delAct')cl().acts=cl().acts.filter(x=>x.id!=id);
       if(a=='delMeet')cl().meetings=cl().meetings.filter(x=>x.id!=id);
-      if(a=='reset'){S=SEED();persist();markAll()}
+      if(a=='reset'){S=SEED();persist()}
       confirmId=null;save();toast('បានអនុវត្ត')}
   }
   else if(a=='export'){
@@ -554,7 +463,7 @@ document.addEventListener('click',e=>{
   else if(a=='import'){
     try{const o=JSON.parse(document.getElementById('blob').value);
       const n=normalize(o);if(!n||!n.classes.length)throw 0;
-      S=n;if(!S.classes.some(c=>c.id==S.cur))S.cur=S.classes[0].id;persist();markAll();fsSchedule();toast('នាំចូលបានជោគជ័យ')}catch(x){toast('កូដមិនត្រឹមត្រូវ');return}}
+      S=n;if(!S.classes.some(c=>c.id==S.cur))S.cur=S.classes[0].id;persist();toast('នាំចូលបានជោគជ័យ')}catch(x){toast('កូដមិនត្រឹមត្រូវ');return}}
   render();
 });
 document.addEventListener('submit',e=>{
@@ -599,5 +508,5 @@ document.addEventListener('change',e=>{
     f.parentElement.querySelector('input[type=hidden]').value=c.toDataURL('image/jpeg',.8);toast('បានជ្រើសរូប សូមចុចរក្សាទុក')};
     im.onerror=()=>toast('ឯកសាររូបភាពមិនត្រឹមត្រូវ');im.src=r.result};r.readAsDataURL(f.files[0]);
 });
-load();route();fsInit();
+load();route();
 </script>

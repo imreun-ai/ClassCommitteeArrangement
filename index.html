@@ -264,12 +264,12 @@ async function fsInit(){
   try{
     if(!window.firebase){await loadScript(FBV+'firebase-app-compat.js');await loadScript(FBV+'firebase-firestore-compat.js')}
     if(!firebase.apps.length)firebase.initializeApp(cfg);
-    FS.db=firebase.firestore();
+    FS.db=firebase.firestore();try{FS.db.settings({experimentalAutoDetectLongPolling:true})}catch(x){}
     const ref=FS.db.collection('kkt_schools').doc(FS.sid),snap=await ref.get();
     FS.st='on';
     if(!snap.exists){markAll();await fsFlush()}else{await fsPull(ref)}
     fsListen(ref);
-  }catch(e){FS.st='error';console.error(e);FS.msg=(e.code?'['+e.code+'] ':'')+(e.message=='blocked'||e.message=='timeout'?'មិនអាចទាញ Firebase បានទេ។ ទំព័រនេះប្រហែលមិនអនុញ្ញាតការភ្ជាប់ទៅ Google ឬគ្មានអ៊ីនធឺណិត។':e.code=='permission-denied'?'Firestore បដិសេធសិទ្ធិ (ពិនិត្យ Security Rules)':(e.message||'កំហុស'))}
+  }catch(e){FS.st='error';console.error(e);FS.msg=(e.code?'['+e.code+'] ':'')+(e.message=='blocked'||e.message=='timeout'?'មិនអាចទាញ Firebase បានទេ។ ទំព័រនេះប្រហែលមិនអនុញ្ញាតការភ្ជាប់ទៅ Google ឬគ្មានអ៊ីនធឺណិត។':e.code=='unavailable'?'ភ្ជាប់ទៅ Firestore មិនបាន។ សូមពិនិត្យ៖ (១) បានបង្កើត Firestore Database ក្នុង Firebase Console ហើយឬនៅ (២) ប្រព័ន្ធបិទការផ្សាយពាណិជ្ជកម្ម ឬ VPN មិនរារាំង firestore.googleapis.com (៣) អ៊ីនធឺណិតដំណើរការ។':e.code=='permission-denied'?'Firestore បដិសេធសិទ្ធិ (ពិនិត្យ Security Rules)':(e.message||'កំហុស'))}
   badge();safeRender();
 }
 function fsOff(){FS.unsub.forEach(f=>f());FS.unsub=[];FS.st='off';FS.db=null;badge()}

@@ -135,7 +135,7 @@ td.act{text-align:left;min-width:260px}
   <small>ព្រះរាជាណាចក្រកម្ពុជា · ជាតិ សាសនា ព្រះមហាក្សត្រ</small>
   <h1 id="hTitle">សៀវភៅគណៈគ្រប់គ្រងថ្នាក់រៀន (គគថ)</h1>
   <small id="hSub"></small>
-  <div class="hcls"><label>ថ្នាក់៖ <select id="clsSel"></select></label></div>
+  <div class="hcls"><label>ថ្នាក់៖ <select id="clsSel"></select></label><span id="gsBadge" class="fsb"></span></div>
 </div></div></header>
 <nav><div class="in" id="nav"></div></nav>
 <div class="wrap"><main id="app"></main></div>
@@ -236,7 +236,38 @@ function load(){
   S=o||SEED();if(!S.classes.length)S=SEED();
   const c=+lsGet('kkt-cur');if(S.classes.some(x=>x.id==c))S.cur=c;else S.cur=S.classes[0].id}
 function persist(){lsSet(KEY,JSON.stringify(S));lsSet('kkt-cur',S.cur)}
-function save(){persist()}
+function save(){persist();gsSchedule()}
+/* ===== Google Sheet (តាម Apps Script Web App) ===== */
+const GS_CODE="/**\n * ប្រព័ន្ធ គគថ — ទទួល/ផ្ញើទិន្នន័យជាមួយ Google Sheet\n * ដាក់ក្នុង Extensions → Apps Script ហើយ Deploy ជា Web app\n * (Execute as: Me · Who has access: Anyone)\n */\nconst SHEET_ID = '1PwnCl_EXaIKbP3k6KD90WKxzfrJeIbhX23RPX8YIGao';\nconst DATA = '_Data';          // ទិន្នន័យដើម (JSON) — ប្រព័ន្ធអានពីទីនេះ\nconst CHUNK = 40000;           // 1 cell ≤ 50,000 តួអក្សរ\nconst SKIP = {photo: 1, logo: 1, cover: 1};\n\nfunction ss_() { return SpreadsheetApp.openById(SHEET_ID); }\nfunction out_(o) {\n  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);\n}\nfunction sheet_(name) {\n  const ss = ss_();\n  return ss.getSheetByName(name) || ss.insertSheet(name);   // បង្កើត Sheet ស្វ័យប្រវត្តិ\n}\n\nfunction doGet(e) {\n  try {\n    const a = (e && e.parameter && e.parameter.action) || 'ping';\n    if (a === 'load') return out_({ ok: true, state: read_() });\n    return out_({ ok: true, pong: true, name: ss_().getName() });\n  } catch (x) { return out_({ ok: false, error: String(x) }); }\n}\n\nfunction doPost(e) {\n  const lock = LockService.getScriptLock();\n  try {\n    lock.waitLock(25000);\n    const b = JSON.parse(e.postData.contents);\n    if (b.action !== 'save' || !b.state) return out_({ ok: false, error: 'bad request' });\n    write_(b.state);\n    return out_({ ok: true, saved: new Date().toISOString() });\n  } catch (x) { return out_({ ok: false, error: String(x) }); }\n  finally { try { lock.releaseLock(); } catch (y) {} }\n}\n\nfunction read_() {\n  const sh = ss_().getSheetByName(DATA);\n  if (!sh || sh.getLastRow() < 2) return null;\n  const rows = sh.getRange(2, 2, sh.getLastRow() - 1, 1).getValues();\n  const txt = rows.map(r => r[0]).join('');\n  return txt ? JSON.parse(txt) : null;\n}\n\nfunction write_(S) {\n  // 1) ទិន្នន័យដើម\n  const sh = sheet_(DATA);\n  const json = JSON.stringify(S), rows = [];\n  for (let i = 0; i < json.length; i += CHUNK) rows.push([rows.length + 1, json.substr(i, CHUNK)]);\n  sh.clear();\n  sh.getRange(1, 1, 1, 2).setValues([['#', 'JSON (កុំកែ)']]);\n  sh.getRange(2, 1, rows.length, 2).setNumberFormat('@').setValues(rows);\n  sh.getRange(1, 3).setValue('Updated: ' + new Date().toISOString());\n  sh.setColumnWidth(2, 300);\n\n  // 2) សន្លឹកអានងាយ (បង្កើតឡើងវិញរាល់ពេលរក្សាទុក)\n  const info = S.info || {}, cls = S.classes || [];\n  put_('ព័ត៌មានទូទៅ', ['ចំណងជើង', 'តម្លៃ'],\n    Object.keys(info).filter(k => !SKIP[k]).map(k => [k, info[k]]));\n  put_('ថ្នាក់', ['លេខ', 'ថ្នាក់', 'ចំនួនសមាជិក', 'ចំនួនកិច្ចប្រជុំ'],\n    cls.map(c => [c.id, c.grade, (c.members || []).length, (c.meetings || []).length]));\n  flat_('សមាជិក', cls, 'members');\n  flat_('កិច្ចប្រជុំ', cls, 'meetings');\n\n  const months = S.months || [], head = ['ថ្នាក់', 'សកម្មភាព'].concat(months.map(m => 'ខែ ' + m));\n  const plan = [];\n  cls.forEach(c => (c.acts || []).forEach(a =>\n    plan.push([c.grade, a.t].concat(months.map((m, i) => (a.c && a.c[i]) ? '✓' : '')))));\n  put_('ផែនការប្រចាំឆ្នាំ', head, plan);\n}\n\nfunction flat_(name, cls, key) {\n  const keys = [];\n  cls.forEach(c => (c[key] || []).forEach(o => Object.keys(o).forEach(k => {\n    if (!SKIP[k] && keys.indexOf(k) < 0) keys.push(k);\n  })));\n  const rows = [];\n  cls.forEach(c => (c[key] || []).forEach(o =>\n    rows.push([c.grade].concat(keys.map(k => o[k] == null ? '' : String(o[k]))))));\n  put_(name, ['ថ្នាក់'].concat(keys), rows);\n}\n\nfunction put_(name, head, rows) {\n  const sh = sheet_(name);\n  sh.clear();\n  sh.getRange(1, 1, 1, head.length).setValues([head]).setFontWeight('bold').setBackground('#e8eefc');\n  if (rows.length) {\n    const w = head.length;\n    rows = rows.map(r => { r = r.slice(0, w); while (r.length < w) r.push(''); return r; });\n    sh.getRange(2, 1, rows.length, w).setNumberFormat('@').setValues(rows);\n  }\n  sh.setFrozenRows(1);\n}\n";
+const GS_URL=null; /* ឬដាក់ URL /exec ទីនេះ ដើម្បីឲ្យអ្នកប្រើគ្រប់គ្នាភ្ជាប់ស្វ័យប្រវត្តិ */
+const GS={st:'off',msg:'',t:null,pend:false,last:''};
+const gsUrl=()=>lsGet('kkt-gs')||GS_URL||'';
+function gsBadge(){const b=document.getElementById('gsBadge');if(!b)return;
+  b.textContent=GS.st=='on'?'▦ Google Sheet':GS.st=='busy'?'▦ កំពុងធ្វើសមកាល…':GS.st=='error'?'▦ មិនភ្ជាប់':'ក្នុងម៉ាស៊ីន';b.dataset.st=GS.st}
+function gsSet(st,msg){GS.st=st;GS.msg=msg||'';gsBadge();const s=document.getElementById('gsStat');if(s)s.textContent=gsLabel();const m=document.getElementById('gsMsg');if(m){m.textContent=GS.msg;m.hidden=!GS.msg}}
+const gsLabel=()=>GS.st=='on'?'ភ្ជាប់ហើយ'+(GS.last?' (រក្សាទុកចុងក្រោយ '+GS.last+')':''):GS.st=='busy'?'កំពុងធ្វើសមកាល…':GS.st=='error'?'មិនភ្ជាប់':'មិនទាន់ភ្ជាប់ (ប្រើ Local Storage)';
+async function gsCall(url,body){
+  const r=body?await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)}):await fetch(url);
+  const t=await r.text();let j;try{j=JSON.parse(t)}catch(e){throw new Error('ចម្លើយមិនត្រឹមត្រូវ — Deploy ជា «Anyone» ឬនៅ? (URL ត្រូវបញ្ចប់ដោយ /exec)')}
+  if(!j.ok)throw new Error(j.error||'កំហុសពី Apps Script');return j}
+const gsErr=e=>/Failed to fetch|NetworkError|Load failed/i.test(e.message)?'មិនអាចទៅដល់ Apps Script (ពិនិត្យ URL, Deploy «Who has access: Anyone», ឬបណ្ដាញ/AdBlock)':e.message;
+const nowT=()=>new Date().toLocaleTimeString('km-KH',{hour:'2-digit',minute:'2-digit'});
+function gsSchedule(){if(!gsUrl())return;GS.pend=true;clearTimeout(GS.t);GS.t=setTimeout(gsPush,1500)}
+async function gsPush(){
+  const u=gsUrl();if(!u)return;clearTimeout(GS.t);GS.pend=false;gsSet('busy');
+  try{const j=await gsCall(u,{action:'save',state:S});GS.last=nowT();gsSet('on')}
+  catch(e){gsSet('error',gsErr(e));GS.pend=true}}
+async function gsPull(first){
+  const u=gsUrl();if(!u)return false;gsSet('busy');
+  try{const j=await gsCall(u+(u.includes('?')?'&':'?')+'action=load');
+    const n=normalize(j.state);
+    if(!n){await gsPush();return true}                       /* Sheet ទទេ → ផ្ញើទិន្នន័យក្នុងម៉ាស៊ីនឡើងទៅ */
+    if(JSON.stringify(n)!==JSON.stringify(S)){S=n;if(!S.classes.some(c=>c.id==S.cur))S.cur=S.classes[0].id;persist()}
+    GS.last=nowT();gsSet('on');safeRender();return true}
+  catch(e){gsSet('error',gsErr(e));return false}}
+function gsInit(){if(!gsUrl()){gsBadge();return}gsPull(true);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&gsUrl()&&!GS.pend&&GS.st!='busy'&&!editing)gsPull()})}
+
 const KH='០១២៣៤៥៦៧៨៩';
 const kh=n=>String(n).replace(/\d/g,d=>KH[d]);
 const en=s=>String(s).replace(/[០-៩]/g,d=>KH.indexOf(d));
@@ -363,7 +394,24 @@ function vData(){
   <label style="margin-top:12px">កូដទិន្នន័យ (ចម្លង ឬបិទភ្ជាប់)<textarea id="blob" style="min-height:160px;font-family:monospace;font-size:12px"></textarea></label>
   <div class="row" style="justify-content:flex-start;margin-top:12px"><button class="pri" data-a="export">បង្កើត និងចម្លងកូដ</button><button data-a="import">នាំចូលពីកូដ</button></div>
   <p class="note">ចែករំលែកប្រព័ន្ធ៖ ផ្ញើតំណនៃទំព័រនេះទៅអ្នកដទៃ ពួកគេនឹងមានប្រព័ន្ធទទេផ្ទាល់ខ្លួន។ ប្រសិនបើចង់ឲ្យពួកគេឃើញទិន្នន័យដូចអ្នក សូមផ្ញើកូដទិន្នន័យ ហើយឲ្យគេនាំចូល។</p></section>
-    <section class="panel"><h2>ចាប់ផ្ដើមឡើងវិញ</h2><p>លុបទិន្នន័យទាំងអស់ ហើយត្រឡប់ទៅទិន្នន័យដើមនៃថ្នាក់ 10B។</p>
+      <section class="panel"><h2>Google Sheet (រក្សាទុកទិន្នន័យ)</h2>
+  <p>ស្ថានភាព៖ <b id="gsStat">${gsLabel()}</b></p>
+  <p class="note" id="gsMsg" style="color:var(--warn)" ${GS.msg?'':'hidden'}>${esc(GS.msg)}</p>
+  <details style="margin:8px 0"><summary><b>របៀបភ្ជាប់ (ធ្វើម្ដងគត់ ~3 នាទី)</b></summary>
+  <ol class="note" style="line-height:1.9;padding-left:20px">
+   <li>បើក Google Sheet របស់អ្នក → ម៉ឺនុយ <b>Extensions → Apps Script</b></li>
+   <li>លុបកូដដែលមានស្រាប់ ហើយបិទភ្ជាប់កូដខាងក្រោម (ចុច «ចម្លងកូដ») → ចុច 💾 Save</li>
+   <li>ចុច <b>Deploy → New deployment</b> → ចុចរូបឈ្មោះ ⚙ ជ្រើស <b>Web app</b></li>
+   <li><b>Execute as: Me</b> · <b>Who has access: Anyone</b> → ចុច Deploy → អនុញ្ញាតសិទ្ធិ (Authorize) <i>(បើឃើញ «Google hasn't verified this app» ចុច Advanced → Go to … (unsafe))</i></li>
+   <li>ចម្លង <b>Web app URL</b> (បញ្ចប់ដោយ <code>/exec</code>) មកបិទភ្ជាប់ក្នុងប្រអប់ខាងក្រោម → ចុច «ភ្ជាប់»</li>
+  </ol>
+  <pre class="rules" id="gsCode" style="max-height:240px;overflow:auto;font-size:11px">${esc(GS_CODE)}</pre>
+  <button type="button" data-a="gsCopy">ចម្លងកូដ</button></details>
+  <label style="margin-top:8px">Web app URL (https://script.google.com/macros/s/…/exec)<input id="gsurl" value="${esc(gsUrl())}" placeholder="https://script.google.com/macros/s/.../exec"></label>
+  <div class="row" style="justify-content:flex-start;margin-top:12px"><button class="pri" data-a="gsConnect">ភ្ជាប់</button><button data-a="gsPull2">ទាញទិន្នន័យពី Sheet</button><button data-a="gsPush2">ផ្ញើទិន្នន័យទៅ Sheet ឥឡូវ</button><button data-a="gsDisc">ផ្ដាច់</button><a class="btn" href="https://docs.google.com/spreadsheets/d/1PwnCl_EXaIKbP3k6KD90WKxzfrJeIbhX23RPX8YIGao/edit" target="_blank" rel="noopener">បើក Google Sheet</a></div>
+  <p class="note">Sheets ត្រូវបានបង្កើតស្វ័យប្រវត្តិ៖ <b>ព័ត៌មានទូទៅ, ថ្នាក់, សមាជិក, ផែនការប្រចាំឆ្នាំ, កិច្ចប្រជុំ</b> (សម្រាប់អាន/បោះពុម្ព) និង <b>_Data</b> (ទិន្នន័យដើម កុំកែ)។ ការកែក្នុងប្រព័ន្ធ រក្សាទុកទៅ Sheet ស្វ័យប្រវត្តិ។ ការកែដោយដៃក្នុង Sheet មិនត្រូវបានទាញចូលប្រព័ន្ធទេ។ រូបថតក៏រក្សាក្នុង _Data ដែរ។</p>
+  <p class="note">⚠ អ្នកដែលមាន URL /exec អាចអាន/សរសេរទិន្នន័យបាន ដូច្នេះកុំចែក URL ជាសាធារណៈ ហើយកុំបញ្ចូលទិន្នន័យសិស្សរសើបក្នុង repo Public។</p></section>
+  <section class="panel"><h2>ចាប់ផ្ដើមឡើងវិញ</h2><p>លុបទិន្នន័យទាំងអស់ ហើយត្រឡប់ទៅទិន្នន័យដើមនៃថ្នាក់ 10B។</p>
   <button class="dng" data-a="reset">${confirmId=='reset'?'ចុចម្ដងទៀតដើម្បីបញ្ជាក់':'កំណត់ឡើងវិញ'}</button></section>`;
 }
 
@@ -441,6 +489,13 @@ document.addEventListener('click',e=>{
   if(a=='selCls'){S.cur=id;persist();editing=null;confirmId=null;toast('បានប្ដូរទៅថ្នាក់ '+cl().grade)}
   else if(a=='delCls'){if(S.classes.length<2){toast('មិនអាចលុបថ្នាក់តែមួយគត់បានទេ')}else if(confirmId!='c'+id){confirmId='c'+id}else{
     S.classes=S.classes.filter(c=>c.id!=id);if(!S.classes.some(c=>c.id==S.cur))S.cur=S.classes[0].id;confirmId=null;save(id);toast('បានលុបថ្នាក់')}}
+  else if(a=='gsConnect'){const u=document.getElementById('gsurl').value.trim();
+    if(!/^https:\/\/script\.google(usercontent)?\.com\/.+/.test(u)){toast('URL មិនត្រឹមត្រូវ — ត្រូវចាប់ផ្ដើម https://script.google.com/macros/s/…/exec');return}
+    lsSet('kkt-gs',u);gsPull(true).then(ok=>{toast(ok?'ភ្ជាប់ Google Sheet បានជោគជ័យ':'ភ្ជាប់មិនបាន')});return}
+  else if(a=='gsPull2'){if(!gsUrl()){toast('សូមភ្ជាប់ជាមុន');return}gsPull().then(()=>toast('បានទាញទិន្នន័យ'));return}
+  else if(a=='gsPush2'){if(!gsUrl()){toast('សូមភ្ជាប់ជាមុន');return}gsPush().then(()=>toast(GS.st=='on'?'បានផ្ញើទិន្នន័យ':'ផ្ញើមិនបាន'));return}
+  else if(a=='gsDisc'){try{localStorage.removeItem('kkt-gs')}catch(e){}GS.st='off';GS.msg='';toast('បានផ្ដាច់')}
+  else if(a=='gsCopy'){const t=GS_CODE;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('បានចម្លងកូដ'),()=>{const p=document.getElementById('gsCode'),r=document.createRange();r.selectNodeContents(p);const s=getSelection();s.removeAllRanges();s.addRange(r);toast('សូមចុច Ctrl+C')});return}
   else
   if(a=='newMem'){editing={t:'m',o:{sex:'ស្រី',cat:CATS[0],role:'សមាជិក'}}}
   else if(a=='editMem'){editing={t:'m',o:cl().members.find(x=>x.id==id)}}
@@ -454,7 +509,7 @@ document.addEventListener('click',e=>{
       if(a=='delMem')cl().members=cl().members.filter(x=>x.id!=id);
       if(a=='delAct')cl().acts=cl().acts.filter(x=>x.id!=id);
       if(a=='delMeet')cl().meetings=cl().meetings.filter(x=>x.id!=id);
-      if(a=='reset'){S=SEED();persist()}
+      if(a=='reset'){S=SEED();persist();gsSchedule()}
       confirmId=null;save();toast('បានអនុវត្ត')}
   }
   else if(a=='export'){
@@ -463,7 +518,7 @@ document.addEventListener('click',e=>{
   else if(a=='import'){
     try{const o=JSON.parse(document.getElementById('blob').value);
       const n=normalize(o);if(!n||!n.classes.length)throw 0;
-      S=n;if(!S.classes.some(c=>c.id==S.cur))S.cur=S.classes[0].id;persist();toast('នាំចូលបានជោគជ័យ')}catch(x){toast('កូដមិនត្រឹមត្រូវ');return}}
+      S=n;if(!S.classes.some(c=>c.id==S.cur))S.cur=S.classes[0].id;persist();gsSchedule();toast('នាំចូលបានជោគជ័យ')}catch(x){toast('កូដមិនត្រឹមត្រូវ');return}}
   render();
 });
 document.addEventListener('submit',e=>{
@@ -508,5 +563,5 @@ document.addEventListener('change',e=>{
     f.parentElement.querySelector('input[type=hidden]').value=c.toDataURL('image/jpeg',.8);toast('បានជ្រើសរូប សូមចុចរក្សាទុក')};
     im.onerror=()=>toast('ឯកសាររូបភាពមិនត្រឹមត្រូវ');im.src=r.result};r.readAsDataURL(f.files[0]);
 });
-load();route();
+load();route();gsInit();
 </script>

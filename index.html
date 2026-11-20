@@ -202,6 +202,8 @@ function mkState(o){const info={...o.info};const grade=info.grade||'',cover=info
 const SEED=()=>{const o=SEED0();o.members=[];o.info={...o.info,cover:'',principal:'',lunar:'',signDate:'',signG:''};return mkState(o)};
 const ACTS_T=()=>SEED0().acts.map(a=>({...a,c:{}}));
 function cl(){return S.classes.find(c=>c.id==S.cur)||S.classes[0]}
+const FB_DBID='classcommittee'; /* ឈ្មោះ Firestore database (ទុក null ប្រសិនបើជា (default)) */
+const fbDbId=()=>lsGet('kkt-dbid')||FB_DBID||'(default)';
 const FB_CONFIG={apiKey:"AIzaSyD01YHN5X-WRbPdQxQn52ly17jgL-bhat4",authDomain:"classcommittee-18ea7.firebaseapp.com",projectId:"classcommittee-18ea7",storageBucket:"classcommittee-18ea7.firebasestorage.app",messagingSenderId:"960022321269",appId:"1:960022321269:web:fe0ac62769552fb074403c",measurementId:"G-9664Y0PFEH"}; /* ដាក់ Firebase config នៅទីនេះ ប្រសិនបើចង់ឲ្យគ្រប់អ្នកប្រើភ្ជាប់ Firestore ដោយស្វ័យប្រវត្តិ */
 const TABS=[['home','ទិដ្ឋភាពទូទៅ'],['members','សមាជិក'],['plan','ផែនការប្រចាំឆ្នាំ'],['meetings','កិច្ចប្រជុំ'],['book','សៀវភៅ (បោះពុម្ព)'],['data','ទិន្នន័យ']];
 const CATS=['មាតាបិតា','ក្រុមប្រឹក្សាកុមារយុវជន','គ្រូបន្ទុកថ្នាក់'];
@@ -264,7 +266,7 @@ async function fsInit(){
   try{
     if(!window.firebase){await loadScript(FBV+'firebase-app-compat.js');await loadScript(FBV+'firebase-firestore-compat.js')}
     if(!firebase.apps.length)firebase.initializeApp(cfg);
-    FS.db=firebase.firestore();try{FS.db.settings({experimentalAutoDetectLongPolling:true})}catch(x){}
+    const dbid=fbDbId();FS.db=(dbid&&dbid!='(default)')?firebase.app().firestore(dbid):firebase.firestore();try{FS.db.settings({experimentalAutoDetectLongPolling:true})}catch(x){}
     const ref=FS.db.collection('kkt_schools').doc(FS.sid),snap=await ref.get();
     FS.st='on';
     if(!snap.exists){markAll();await fsFlush()}else{await fsPull(ref)}
@@ -275,12 +277,12 @@ async function fsInit(){
 }
 async function fsDiag(){
   const c=fbCfg();if(!c||!c.projectId)return'មិនមាន Firebase config';
-  const u='https://firestore.googleapis.com/v1/projects/'+encodeURIComponent(c.projectId)+'/databases/(default)/documents/kkt_schools?pageSize=1&key='+encodeURIComponent(c.apiKey||'');
+  const u='https://firestore.googleapis.com/v1/projects/'+encodeURIComponent(c.projectId)+'/databases/'+encodeURIComponent(fbDbId())+'/documents/kkt_schools?pageSize=1&key='+encodeURIComponent(c.apiKey||'');
   try{const r=await fetch(u);let j={};try{j=await r.json()}catch(e){}
     const em=(j.error&&j.error.message)||'',st=(j.error&&j.error.status)||'';
     if(r.ok)return'✔ ទៅដល់ Firestore បាន ហើយ database និងសិទ្ធិអានដំណើរការ។ បញ្ហាគឺការភ្ជាប់បែបបន្តផ្ទាល់ (WebChannel) ត្រូវបានរារាំងដោយបណ្ដាញ ឬកម្មវិធី។ សូមសាកល្បងបណ្ដាញផ្សេង ឬបិទ AdBlock/VPN។';
     if(/SERVICE_DISABLED|has not been used|is disabled/i.test(em+st))return'✘ Cloud Firestore API មិនទាន់បើកសម្រាប់ project នេះ។ សូមបើកក្នុង Google Cloud Console → APIs → Cloud Firestore API → Enable ហើយរង់ចាំ ២ នាទី។';
-    if(r.status==404||/does not exist|NOT_FOUND/i.test(em+st))return'✘ មិនទាន់បង្កើត Firestore Database ឈ្មោះ (default)។ ក្នុង Firebase Console → Firestore Database ចុច «Create database» ។';
+    if(r.status==404||/does not exist|NOT_FOUND/i.test(em+st))return'✘ រកមិនឃើញ Firestore Database ឈ្មោះ «'+fbDbId()+'»។ សូមពិនិត្យឈ្មោះ database (មើល URL ក្នុង Firebase Console: .../databases/ឈ្មោះ/...) ឬចុច «Create database» បើមិនទាន់បង្កើត។';
     if(r.status==403||st=='PERMISSION_DENIED')return'✔ Database មានហើយ ប៉ុន្តែ Security Rules បដិសេធ។ សូមបិទភ្ជាប់ Rules ហើយចុច Publish។';
     if(r.status==400||/API key/i.test(em))return'✘ apiKey មិនត្រឹមត្រូវ ឬត្រូវបានដាក់កំហិត (API key restrictions)។ '+em;
     return'✘ HTTP '+r.status+' '+st+' '+em;
@@ -430,6 +432,7 @@ function vData(){
   <p>ស្ថានភាព៖ <b id="fsStat">${FS.st=='on'?'ភ្ជាប់ហើយ':FS.st=='loading'?'កំពុងភ្ជាប់…':FS.st=='error'?'មិនភ្ជាប់':'មិនទាន់ភ្ជាប់ (ប្រើ Local Storage)'}</b></p>
   ${FS.msg?`<p class="note" style="color:var(--warn)">${esc(FS.msg)}</p>`:''}
   <label style="margin-top:8px">Firebase config (បិទភ្ជាប់ពី Firebase Console → Project settings → Your apps)<textarea id="fbcfg" style="font-family:monospace;font-size:12px;min-height:110px" placeholder='{ "apiKey": "...", "authDomain": "...", "projectId": "...", "appId": "..." }'>${esc(lsGet('kkt-fbcfg')||'')}</textarea></label>
+  <label style="margin-top:8px">ឈ្មោះ Firestore Database (មើលក្នុង URL ក្រោយ /databases/ ឬប្រអប់ជ្រើស database ក្នុង Firebase)<input id="dbid" value="${esc(fbDbId())}"></label>
   <label style="margin-top:8px">លេខកូដសាលា (ឲ្យអ្នកប្រើដូចគ្នាប្រើកូដដូចគ្នា)<input id="sid" value="${esc(lsGet('kkt-sid')||'default')}"></label>
   <div class="row" style="justify-content:flex-start;margin-top:12px"><button class="pri" data-a="fsConnect">ភ្ជាប់ Firestore</button><button data-a="fsPush">ផ្ញើទិន្នន័យក្នុងម៉ាស៊ីនទៅ Firestore (សរសេរជាន់)</button><button data-a="fsDiag">ពិនិត្យការភ្ជាប់</button><button class="dng" data-a="fsDisc">ផ្ដាច់</button></div>
   <p class="note" id="diagOut" style="white-space:pre-wrap"></p>
@@ -525,7 +528,7 @@ document.addEventListener('click',e=>{
     const txt=document.getElementById('fbcfg').value.trim();let cfg={};
     for(const m of txt.matchAll(/["']?([A-Za-z]\w*)["']?\s*:\s*["']([^"']+)["']/g))cfg[m[1]]=m[2];
     if(!cfg||!cfg.projectId){toast('Firebase config មិនត្រឹមត្រូវ (ត្រូវមាន projectId)');return}
-    lsSet('kkt-fbcfg',JSON.stringify(cfg));lsSet('kkt-sid',(document.getElementById('sid').value.trim()||'default').replace(/[\/\s]/g,'-'));fsOff();fsInit();return}
+    lsSet('kkt-fbcfg',JSON.stringify(cfg));lsSet('kkt-dbid',document.getElementById('dbid').value.trim()||'(default)');lsSet('kkt-sid',(document.getElementById('sid').value.trim()||'default').replace(/[\/\s]/g,'-'));fsOff();fsInit();return}
   else if(a=='fsDiag'){const o=document.getElementById('diagOut');o.textContent='កំពុងពិនិត្យ…';fsDiag().then(t=>{o.textContent=t});return}
   else if(a=='fsPush'){if(FS.st!='on'){toast('សូមភ្ជាប់ Firestore ជាមុន');return}markAll();fsFlush().then(()=>toast('បានផ្ញើទិន្នន័យ'));return}
   else if(a=='fsDisc'){fsOff();try{localStorage.removeItem('kkt-fbcfg')}catch(e){}FS.msg='';toast('បានផ្ដាច់')}

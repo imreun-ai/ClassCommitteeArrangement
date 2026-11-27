@@ -345,7 +345,7 @@ function pct(c){c=c||cl();let tot=0,done=0;c.acts.forEach(a=>c.months.forEach((m
 
 function head(){
   const i=S.info;
-  document.getElementById('hTitle').textContent='សៀវភៅគណៈគ្រប់គ្រងថ្នាក់រៀន (គគថ) ថ្នាក់ទី '+kh(cl().grade);
+  document.getElementById('hTitle').textContent='ប្រព័ន្ធរៀបចំគណៈកម្មការថ្នាក់រៀន (គគថ) · ថ្នាក់ទី '+kh(cl().grade);
   document.getElementById('hSub').textContent=i.school+' · ឆ្នាំសិក្សា '+i.year;
   document.title='ប្រព័ន្ធរៀបចំគណៈកម្មការថ្នាក់រៀន (គគថ) · '+cl().grade;const lg=document.getElementById('hLogo');lg.hidden=!i.logo;if(i.logo)lg.src=i.logo;
   const sel=document.getElementById('clsSel');if(sel)sel.innerHTML=S.classes.map(c=>`<option value="${c.id}" ${c.id==cl().id?'selected':''}>ថ្នាក់ទី ${esc(c.grade)}</option>`).join('');

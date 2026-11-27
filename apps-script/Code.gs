@@ -9,9 +9,9 @@ const S_INFO = 'ព័ត៌មានទូទៅ', S_CLS = 'បញ្ជីថ�
       S_PLAN = 'ផែនការប្រចាំឆ្នាំ', S_MEET = 'កិច្ចប្រជុំ', S_PHOTO = '_រូបថត';
 const CHUNK = 40000;
 const LBL = {name:'ឈ្មោះ', sex:'ភេទ', age:'អាយុ', cat:'ប្រភេទ', role:'តួនាទី', job:'មុខរបរ', task:'ភារកិច្ច',
-             date:'កាលបរិច្ឆេទ', place:'ទីកន្លែង', topic:'ប្រធានបទ', notes:'កំណត់ចំណាំ', decision:'សេចក្តីសម្រេច'};
+             date:'កាលបរិច្ឆេទ', place:'ទីកន្លែង', topic:'ប្រធានបទ', notes:'កំណត់ចំណាំ', decision:'សេចក្តីសម្រេច', time:'ម៉ោង', chair:'ប្រធានអង្គប្រជុំ', absent:'អវត្តមាន (លេខកូដសមាជិក)', n:'ចំនួនអ្នកចូលរួម'};
 const REV = {}; Object.keys(LBL).forEach(k => REV[LBL[k]] = k);
-const ORDER = ['name','sex','age','cat','role','job','task','date','place','topic','notes','decision'];
+const ORDER = ['name','sex','age','cat','role','job','task','date','time','place','chair','n','absent','topic','notes','decision'];
 
 function ss_() { return SpreadsheetApp.openById(SHEET_ID); }
 function out_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }

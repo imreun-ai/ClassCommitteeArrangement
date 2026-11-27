@@ -148,6 +148,27 @@ td.act{text-align:left;min-width:260px}
 .ob b{font-family:'Khmer OS Muol','Moul','Noto Sans Khmer',serif;font-weight:400;font-size:1.51em;line-height:1.5}
 .ob span,.ob small{font-size:1.1em}
 .pg.p3 .para{font-size:.97em}.pg.p3 .bm{font-size:.97em;line-height:1.5;margin-bottom:.45em}.pg.p3 .para{line-height:1.6;margin-bottom:.4em}.pg.p3.pgx{padding-top:48px;padding-bottom:40px}
+
+/* ឯកសារកិច្ចប្រជុំ (កំណត់ហេតុ · សម្រង់អវត្តមាន · សំណើទទួលស្គាល់ គគថ) */
+.doc{font-size:calc(var(--k,1)*1em);line-height:1.7;color:#111;width:100%}
+.doc .kg .moul{font-size:1.15em;line-height:1.7}
+.doc .dh{display:flex;justify-content:space-between;align-items:flex-start;margin:.5em 0 .6em;font-size:.88em;line-height:1.65}
+.doc .dh .moul{text-align:center}.doc .dh .yrd{white-space:nowrap;color:#111}
+.doc h3{font-family:var(--head);font-weight:400;text-align:center;margin:.3em 0 .6em;font-size:1.08em;line-height:1.7}
+.doc p{margin:0 0 .4em;text-align:justify;text-indent:2em}
+.doc p.ni{text-indent:0}.doc .c{text-align:center}.doc .bdy{font-weight:700}
+.doc .ml>div{display:grid;grid-template-columns:1.6em 4.8em 1.5fr 1.9fr 1.2fr;column-gap:.4em;line-height:1.6;padding:0 .6em}.doc .ml span{white-space:nowrap}
+.doc .at{width:100%;border-collapse:collapse;font-size:.88em;margin:.4em 0 1.2em}
+.doc .at th,.doc .at td{border:1px solid #111;padding:.45em .3em;text-align:center;line-height:1.4;height:2.3em}
+.doc .at th{font-weight:600}
+.doc .ut{text-align:center;font-weight:700;text-decoration:underline;margin:1.2em 0 .6em}
+.doc .sg2{display:grid;grid-template-columns:1fr 1fr;gap:0 1em;margin-top:.8em;text-align:center}
+.doc .sg2 .b{font-family:var(--head);font-size:.92em}
+.doc .sp{height:3.6em}
+.doc .it{font-weight:700;font-style:italic}
+.dw{container-type:inline-size;width:100%;max-width:794px;display:grid;gap:18px}.pg.docpg{font-size:2.078cqw;padding:7.18%}
+@media print{.dw{display:block;max-width:none}.pg.docpg{font-size:12.5pt;padding:15mm}}
+.pg.docpg.pgx{font-size:16.5px;padding:57px}
 </style>
 
 <header><div class="in hd"><img id="hLogo" alt="" hidden>
@@ -258,7 +279,7 @@ function load(){
 function persist(){lsSet(KEY,JSON.stringify(S));lsSet('kkt-cur',S.cur)}
 function save(){persist();gsSchedule()}
 /* ===== Google Sheet (តាម Apps Script Web App) — ទាញ/ផ្ញើ ទាំងពីរទិស ===== */
-const GS_CODE="/**\n * ប្រព័ន្ធ គគថ — Google Sheet ជាមូលដ្ឋានទិន្នន័យ (ទាញ និងផ្ញើ ទាំងពីរទិស)\n * ដាក់ក្នុង Extensions → Apps Script ហើយ Deploy ជា Web app\n * (Execute as: Me · Who has access: Anyone)\n * កែ/លុបជួរក្នុង Sheet → ប្រព័ន្ធប្តូរតាម។ កែក្នុងប្រព័ន្ធ → Sheet ប្តូរតាម។\n */\nconst SHEET_ID = '1PwnCl_EXaIKbP3k6KD90WKxzfrJeIbhX23RPX8YIGao';\nconst S_INFO = 'ព័ត៌មានទូទៅ', S_CLS = 'បញ្ជីថ្នាក់', S_MEM = 'សមាជិក',\n      S_PLAN = 'ផែនការប្រចាំឆ្នាំ', S_MEET = 'កិច្ចប្រជុំ', S_PHOTO = '_រូបថត';\nconst CHUNK = 40000;\nconst LBL = {name:'ឈ្មោះ', sex:'ភេទ', age:'អាយុ', cat:'ប្រភេទ', role:'តួនាទី', job:'មុខរបរ', task:'ភារកិច្ច',\n             date:'កាលបរិច្ឆេទ', place:'ទីកន្លែង', topic:'ប្រធានបទ', notes:'កំណត់ចំណាំ', decision:'សេចក្តីសម្រេច'};\nconst REV = {}; Object.keys(LBL).forEach(k => REV[LBL[k]] = k);\nconst ORDER = ['name','sex','age','cat','role','job','task','date','place','topic','notes','decision'];\n\nfunction ss_() { return SpreadsheetApp.openById(SHEET_ID); }\nfunction out_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }\nfunction sheet_(n) { const s = ss_(); return s.getSheetByName(n) || s.insertSheet(n); }   // បង្កើត Sheet ស្វ័យប្រវត្តិ\n\nfunction doGet(e) {\n  try {\n    const a = (e && e.parameter && e.parameter.action) || 'ping';\n    if (a === 'load') return out_({ ok: true, state: read_() });\n    return out_({ ok: true, pong: true, name: ss_().getName() });\n  } catch (x) { return out_({ ok: false, error: String(x) }); }\n}\nfunction doPost(e) {\n  const lock = LockService.getScriptLock();\n  try {\n    lock.waitLock(25000);\n    const b = JSON.parse(e.postData.contents);\n    if (b.action !== 'save' || !b.state) return out_({ ok: false, error: 'bad request' });\n    write_(b.state, b.photos || null);\n    return out_({ ok: true, saved: new Date().toISOString() });\n  } catch (x) { return out_({ ok: false, error: String(x) }); }\n  finally { try { lock.releaseLock(); } catch (y) {} }\n}\n\n/* ---------- សរសេរ ---------- */\nfunction write_(S, photos) {\n  const cls = S.classes || [], info = S.info || {};\n  put_(S_INFO, ['ចំណងជើង', 'តម្លៃ'], Object.keys(info).map(k => [k, info[k]]));\n  put_(S_CLS, ['ថ្នាក់', 'លេខថ្នាក់ (កុំកែ)', 'ខែក្នុងផែនការ (ញែកដោយ ,)'],\n       cls.map(c => [c.grade, c.id, (c.months || []).join(',')]));\n  flat_(S_MEM, cls, 'members');\n  flat_(S_MEET, cls, 'meetings');\n\n  let maxM = 0; cls.forEach(c => maxM = Math.max(maxM, (c.months || []).length));\n  const head = ['ថ្នាក់', 'លេខថ្នាក់', 'លេខកូដ', 'សកម្មភាព'];\n  for (let i = 1; i <= maxM; i++) head.push('ខែទី' + i);\n  const plan = [];\n  cls.forEach(c => (c.acts || []).forEach(a => {\n    const r = [c.grade, c.id, a.id, a.t];\n    for (let i = 0; i < maxM; i++) r.push(i >= (c.months || []).length ? '' : a.c && a.c[i] == 1 ? '✓' : a.c && a.c[i] == 2 ? '●' : '');\n    plan.push(r);\n  }));\n  put_(S_PLAN, head, plan);\n\n  if (photos) {                                     // សរសេររូបថតតែពេលមានការប្ដូរ\n    const rows = [];\n    Object.keys(photos).forEach(k => {\n      const v = String(photos[k] || '');\n      for (let i = 0, n = 0; i < v.length; i += CHUNK, n++) rows.push([k, n, v.substr(i, CHUNK)]);\n    });\n    put_(S_PHOTO, ['គន្លឹះ', 'ផ្នែក', 'ទិន្នន័យ (កុំកែ)'], rows);\n  }\n  ['ថ្នាក់', '_Data'].forEach(n => { const s = ss_().getSheetByName(n); if (s && ss_().getSheets().length > 1) ss_().deleteSheet(s); });\n}\n\nfunction flat_(name, cls, key) {\n  const keys = [];\n  cls.forEach(c => (c[key] || []).forEach(o => Object.keys(o).forEach(k => {\n    if (k !== 'id' && k !== 'photo' && keys.indexOf(k) < 0) keys.push(k);\n  })));\n  keys.sort((a, b) => (ORDER.indexOf(a) < 0 ? 99 : ORDER.indexOf(a)) - (ORDER.indexOf(b) < 0 ? 99 : ORDER.indexOf(b)));\n  const rows = [];\n  cls.forEach(c => (c[key] || []).forEach(o =>\n    rows.push([c.grade, c.id, o.id].concat(keys.map(k => o[k] == null ? '' : o[k])))));\n  put_(name, ['ថ្នាក់', 'លេខថ្នាក់', 'លេខកូដ'].concat(keys.map(k => LBL[k] || k)), rows);\n}\n\nfunction put_(name, head, rows) {\n  const sh = sheet_(name), w = head.length;\n  sh.clear();\n  sh.getRange(1, 1, 1, w).setValues([head]).setFontWeight('bold').setBackground('#e8eefc');\n  if (rows.length) {\n    rows = rows.map(r => { r = r.slice(0, w).map(v => v == null ? '' : String(v)); while (r.length < w) r.push(''); return r; });\n    sh.getRange(2, 1, rows.length, w).setNumberFormat('@').setValues(rows);\n  }\n  sh.setFrozenRows(1);\n}\n\n/* ---------- អាន (Sheet ជាប្រភពពិត) ---------- */\nfunction tbl_(name) {\n  const sh = ss_().getSheetByName(name);\n  if (!sh || sh.getLastRow() < 1) return null;\n  const v = sh.getDataRange().getValues().map(r => r.map(x => x == null ? '' : String(x).trim()));\n  return { head: v[0], rows: v.slice(1).filter(r => r.some(x => x !== '')) };\n}\nconst num_ = x => (x !== '' && !isNaN(x)) ? Number(x) : x;\n\nfunction read_() {\n  const ct = tbl_(S_CLS);\n  if (!ct || !ct.rows.length) return null;            // Sheet ទទេ → ប្រព័ន្ធផ្ញើទិន្នន័យឡើង\n\n  const photos = {}, pt = tbl_(S_PHOTO);\n  if (pt) {\n    const parts = {};\n    pt.rows.forEach(r => { (parts[r[0]] = parts[r[0]] || []).push([Number(r[1]), r[2]]); });\n    Object.keys(parts).forEach(k => photos[k] = parts[k].sort((a, b) => a[0] - b[0]).map(p => p[1]).join(''));\n  }\n  const info = {}, it = tbl_(S_INFO);\n  if (it) it.rows.forEach(r => { if (r[0] !== '') info[r[0]] = r[1]; });\n  info.logo = photos.logo || '';\n\n  const classes = [], byId = {}, byGrade = {};\n  let maxC = 0; ct.rows.forEach(r => { const n = Number(r[1]); if (n > maxC) maxC = n; });\n  ct.rows.forEach(r => {\n    if (r[0] === '') return;\n    const id = r[1] === '' ? ++maxC : Number(r[1]);\n    const c = { id: id, grade: r[0], cover: photos['cover:' + id] || '',\n                members: [], months: r[2] === '' ? [] : r[2].split(',').map(s => s.trim()), acts: [], meetings: [] };\n    classes.push(c); byId[id] = c; byGrade[r[0]] = c;\n  });\n  if (!classes.length) return null;\n  const find = r => byId[Number(r[1])] || byGrade[r[0]];\n\n  [[S_MEM, 'members', true], [S_MEET, 'meetings', false]].forEach(([name, key, withPhoto]) => {\n    const t = tbl_(name); if (!t) return;\n    const keys = t.head.slice(3).map(h => REV[h] || h);\n    t.rows.forEach(r => {\n      const c = find(r); if (!c) return;               // ជួរដែលគ្មានថ្នាក់ត្រូវគ្នា ត្រូវបានរំលង\n      const o = {}; keys.forEach((k, i) => { if (k) o[k] = r[3 + i] == null ? '' : r[3 + i]; });\n      if (!Object.keys(o).some(k => o[k] !== '')) return;\n      let max = 0; c[key].forEach(x => { if (x.id > max) max = x.id; });\n      o.id = r[2] === '' ? max + 1 : num_(r[2]);\n      if (key === 'members') o.photo = photos['m:' + c.id + ':' + o.id] || '';\n      c[key].push(o);\n    });\n  });\n\n  const pl = tbl_(S_PLAN);\n  if (pl) pl.rows.forEach(r => {\n    const c = find(r); if (!c || r[3] === '') return;\n    const a = { id: r[2] === '' ? c.acts.length + 1 : num_(r[2]), t: r[3], c: {} };\n    for (let i = 4; i < r.length && i - 4 < c.months.length; i++) {\n      const v = r[i]; if (v === '') continue;\n      a.c[i - 4] = (v === '●' || v === '2') ? 2 : 1;\n    }\n    c.acts.push(a);\n  });\n  return { v: 3, info: info, cur: classes[0].id, classes: classes };\n}\n";
+const GS_CODE="/**\n * ប្រព័ន្ធ គគថ — Google Sheet ជាមូលដ្ឋានទិន្នន័យ (ទាញ និងផ្ញើ ទាំងពីរទិស)\n * ដាក់ក្នុង Extensions → Apps Script ហើយ Deploy ជា Web app\n * (Execute as: Me · Who has access: Anyone)\n * កែ/លុបជួរក្នុង Sheet → ប្រព័ន្ធប្តូរតាម។ កែក្នុងប្រព័ន្ធ → Sheet ប្តូរតាម។\n */\nconst SHEET_ID = '1PwnCl_EXaIKbP3k6KD90WKxzfrJeIbhX23RPX8YIGao';\nconst S_INFO = 'ព័ត៌មានទូទៅ', S_CLS = 'បញ្ជីថ្នាក់', S_MEM = 'សមាជិក',\n      S_PLAN = 'ផែនការប្រចាំឆ្នាំ', S_MEET = 'កិច្ចប្រជុំ', S_PHOTO = '_រូបថត';\nconst CHUNK = 40000;\nconst LBL = {name:'ឈ្មោះ', sex:'ភេទ', age:'អាយុ', cat:'ប្រភេទ', role:'តួនាទី', job:'មុខរបរ', task:'ភារកិច្ច',\n             date:'កាលបរិច្ឆេទ', place:'ទីកន្លែង', topic:'ប្រធានបទ', notes:'កំណត់ចំណាំ', decision:'សេចក្តីសម្រេច', time:'ម៉ោង', chair:'ប្រធានអង្គប្រជុំ', absent:'អវត្តមាន (លេខកូដសមាជិក)', n:'ចំនួនអ្នកចូលរួម'};\nconst REV = {}; Object.keys(LBL).forEach(k => REV[LBL[k]] = k);\nconst ORDER = ['name','sex','age','cat','role','job','task','date','time','place','chair','n','absent','topic','notes','decision'];\n\nfunction ss_() { return SpreadsheetApp.openById(SHEET_ID); }\nfunction out_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }\nfunction sheet_(n) { const s = ss_(); return s.getSheetByName(n) || s.insertSheet(n); }   // បង្កើត Sheet ស្វ័យប្រវត្តិ\n\nfunction doGet(e) {\n  try {\n    const a = (e && e.parameter && e.parameter.action) || 'ping';\n    if (a === 'load') return out_({ ok: true, state: read_() });\n    return out_({ ok: true, pong: true, name: ss_().getName() });\n  } catch (x) { return out_({ ok: false, error: String(x) }); }\n}\nfunction doPost(e) {\n  const lock = LockService.getScriptLock();\n  try {\n    lock.waitLock(25000);\n    const b = JSON.parse(e.postData.contents);\n    if (b.action !== 'save' || !b.state) return out_({ ok: false, error: 'bad request' });\n    write_(b.state, b.photos || null);\n    return out_({ ok: true, saved: new Date().toISOString() });\n  } catch (x) { return out_({ ok: false, error: String(x) }); }\n  finally { try { lock.releaseLock(); } catch (y) {} }\n}\n\n/* ---------- សរសេរ ---------- */\nfunction write_(S, photos) {\n  const cls = S.classes || [], info = S.info || {};\n  put_(S_INFO, ['ចំណងជើង', 'តម្លៃ'], Object.keys(info).map(k => [k, info[k]]));\n  put_(S_CLS, ['ថ្នាក់', 'លេខថ្នាក់ (កុំកែ)', 'ខែក្នុងផែនការ (ញែកដោយ ,)'],\n       cls.map(c => [c.grade, c.id, (c.months || []).join(',')]));\n  flat_(S_MEM, cls, 'members');\n  flat_(S_MEET, cls, 'meetings');\n\n  let maxM = 0; cls.forEach(c => maxM = Math.max(maxM, (c.months || []).length));\n  const head = ['ថ្នាក់', 'លេខថ្នាក់', 'លេខកូដ', 'សកម្មភាព'];\n  for (let i = 1; i <= maxM; i++) head.push('ខែទី' + i);\n  const plan = [];\n  cls.forEach(c => (c.acts || []).forEach(a => {\n    const r = [c.grade, c.id, a.id, a.t];\n    for (let i = 0; i < maxM; i++) r.push(i >= (c.months || []).length ? '' : a.c && a.c[i] == 1 ? '✓' : a.c && a.c[i] == 2 ? '●' : '');\n    plan.push(r);\n  }));\n  put_(S_PLAN, head, plan);\n\n  if (photos) {                                     // សរសេររូបថតតែពេលមានការប្ដូរ\n    const rows = [];\n    Object.keys(photos).forEach(k => {\n      const v = String(photos[k] || '');\n      for (let i = 0, n = 0; i < v.length; i += CHUNK, n++) rows.push([k, n, v.substr(i, CHUNK)]);\n    });\n    put_(S_PHOTO, ['គន្លឹះ', 'ផ្នែក', 'ទិន្នន័យ (កុំកែ)'], rows);\n  }\n  ['ថ្នាក់', '_Data'].forEach(n => { const s = ss_().getSheetByName(n); if (s && ss_().getSheets().length > 1) ss_().deleteSheet(s); });\n}\n\nfunction flat_(name, cls, key) {\n  const keys = [];\n  cls.forEach(c => (c[key] || []).forEach(o => Object.keys(o).forEach(k => {\n    if (k !== 'id' && k !== 'photo' && keys.indexOf(k) < 0) keys.push(k);\n  })));\n  keys.sort((a, b) => (ORDER.indexOf(a) < 0 ? 99 : ORDER.indexOf(a)) - (ORDER.indexOf(b) < 0 ? 99 : ORDER.indexOf(b)));\n  const rows = [];\n  cls.forEach(c => (c[key] || []).forEach(o =>\n    rows.push([c.grade, c.id, o.id].concat(keys.map(k => o[k] == null ? '' : o[k])))));\n  put_(name, ['ថ្នាក់', 'លេខថ្នាក់', 'លេខកូដ'].concat(keys.map(k => LBL[k] || k)), rows);\n}\n\nfunction put_(name, head, rows) {\n  const sh = sheet_(name), w = head.length;\n  sh.clear();\n  sh.getRange(1, 1, 1, w).setValues([head]).setFontWeight('bold').setBackground('#e8eefc');\n  if (rows.length) {\n    rows = rows.map(r => { r = r.slice(0, w).map(v => v == null ? '' : String(v)); while (r.length < w) r.push(''); return r; });\n    sh.getRange(2, 1, rows.length, w).setNumberFormat('@').setValues(rows);\n  }\n  sh.setFrozenRows(1);\n}\n\n/* ---------- អាន (Sheet ជាប្រភពពិត) ---------- */\nfunction tbl_(name) {\n  const sh = ss_().getSheetByName(name);\n  if (!sh || sh.getLastRow() < 1) return null;\n  const v = sh.getDataRange().getValues().map(r => r.map(x => x == null ? '' : String(x).trim()));\n  return { head: v[0], rows: v.slice(1).filter(r => r.some(x => x !== '')) };\n}\nconst num_ = x => (x !== '' && !isNaN(x)) ? Number(x) : x;\n\nfunction read_() {\n  const ct = tbl_(S_CLS);\n  if (!ct || !ct.rows.length) return null;            // Sheet ទទេ → ប្រព័ន្ធផ្ញើទិន្នន័យឡើង\n\n  const photos = {}, pt = tbl_(S_PHOTO);\n  if (pt) {\n    const parts = {};\n    pt.rows.forEach(r => { (parts[r[0]] = parts[r[0]] || []).push([Number(r[1]), r[2]]); });\n    Object.keys(parts).forEach(k => photos[k] = parts[k].sort((a, b) => a[0] - b[0]).map(p => p[1]).join(''));\n  }\n  const info = {}, it = tbl_(S_INFO);\n  if (it) it.rows.forEach(r => { if (r[0] !== '') info[r[0]] = r[1]; });\n  info.logo = photos.logo || '';\n\n  const classes = [], byId = {}, byGrade = {};\n  let maxC = 0; ct.rows.forEach(r => { const n = Number(r[1]); if (n > maxC) maxC = n; });\n  ct.rows.forEach(r => {\n    if (r[0] === '') return;\n    const id = r[1] === '' ? ++maxC : Number(r[1]);\n    const c = { id: id, grade: r[0], cover: photos['cover:' + id] || '',\n                members: [], months: r[2] === '' ? [] : r[2].split(',').map(s => s.trim()), acts: [], meetings: [] };\n    classes.push(c); byId[id] = c; byGrade[r[0]] = c;\n  });\n  if (!classes.length) return null;\n  const find = r => byId[Number(r[1])] || byGrade[r[0]];\n\n  [[S_MEM, 'members', true], [S_MEET, 'meetings', false]].forEach(([name, key, withPhoto]) => {\n    const t = tbl_(name); if (!t) return;\n    const keys = t.head.slice(3).map(h => REV[h] || h);\n    t.rows.forEach(r => {\n      const c = find(r); if (!c) return;               // ជួរដែលគ្មានថ្នាក់ត្រូវគ្នា ត្រូវបានរំលង\n      const o = {}; keys.forEach((k, i) => { if (k) o[k] = r[3 + i] == null ? '' : r[3 + i]; });\n      if (!Object.keys(o).some(k => o[k] !== '')) return;\n      let max = 0; c[key].forEach(x => { if (x.id > max) max = x.id; });\n      o.id = r[2] === '' ? max + 1 : num_(r[2]);\n      if (key === 'members') o.photo = photos['m:' + c.id + ':' + o.id] || '';\n      c[key].push(o);\n    });\n  });\n\n  const pl = tbl_(S_PLAN);\n  if (pl) pl.rows.forEach(r => {\n    const c = find(r); if (!c || r[3] === '') return;\n    const a = { id: r[2] === '' ? c.acts.length + 1 : num_(r[2]), t: r[3], c: {} };\n    for (let i = 4; i < r.length && i - 4 < c.months.length; i++) {\n      const v = r[i]; if (v === '') continue;\n      a.c[i - 4] = (v === '●' || v === '2') ? 2 : 1;\n    }\n    c.acts.push(a);\n  });\n  return { v: 3, info: info, cur: classes[0].id, classes: classes };\n}\n";
 const GS_URL='https://script.google.com/macros/s/AKfycbxZtR3pzq-Y1h7W8aoJ-MfNIxfW93C0bWAHHvjeNWavEccZ31L3Wf1ngMv35Om9aDHc/exec'; /* ដាក់ URL /exec ទីនេះ ដើម្បីឲ្យម៉ាស៊ីនគ្រប់គ្នាភ្ជាប់ស្វ័យប្រវត្តិ */
 const GS={st:'off',msg:'',t:null,pend:false,last:'',sig:''};
 const gsUrl=()=>GS_URL||lsGet('kkt-gs')||'';
@@ -407,18 +428,101 @@ function meetForm(m){
     <h2 class="full">${m.id?'កែប្រែកិច្ចប្រជុំ':'កត់ត្រាកិច្ចប្រជុំថ្មី'}</h2>
     <label>កាលបរិច្ឆេទ<input type="date" name="date" required value="${esc(m.date||new Date().toISOString().slice(0,10))}"></label>
     <label>ចំនួនអ្នកចូលរួម<input name="n" inputmode="numeric" value="${esc(m.n??'')}"></label>
+    <label>ម៉ោងចាប់ផ្ដើម<input type="time" name="time" value="${esc(m.time||'')}"></label>
+    <label>ទីកន្លែង<input name="place" value="${esc(m.place??S.info.school)}"></label>
+    <label class="full">ប្រធានអង្គប្រជុំ (ទុកទទេ = គ្រូបន្ទុកថ្នាក់)<input name="chair" value="${esc(m.chair||'')}"></label>
+    <div class="full"><label>សមាជិកអវត្តមាន (សម្រាប់ «សម្រង់អវត្តមាន»)</label><div class="chips">${cl().members.map(x=>`<label class="chip"><input type="checkbox" name="absent" value="${x.id}" ${String(m.absent||'').split(',').includes(String(x.id))?'checked':''}><span>${esc(x.name)}</span></label>`).join('')||'<span class="note">មិនទាន់មានសមាជិក</span>'}</div></div>
     <label class="full">ប្រធានបទ<input name="topic" required value="${esc(m.topic)}" placeholder="ឧ. ប្រជុំពិនិត្យលទ្ធផលសិក្សាប្រចាំខែ"></label>
     <label class="full">ខ្លឹមសារពិភាក្សា<textarea name="notes">${esc(m.notes)}</textarea></label>
     <label class="full">សេចក្ដីសម្រេច / សកម្មភាពបន្ត<textarea name="decision">${esc(m.decision)}</textarea></label>
     <div class="full row" style="justify-content:flex-start"><button class="pri" type="submit">រក្សាទុក</button><button type="button" data-a="cancel">បោះបង់</button></div></form>`;
 }
+
+/* ===== ឯកសារកិច្ចប្រជុំ ===== */
+function fitPages(root,keep){
+  const over=pg=>pg.scrollHeight>pg.clientHeight+1;
+  [...(root||document).querySelectorAll('.pg')].forEach(pg=>{const d=pg.querySelector('.doc');if(!d)return;
+    let k=keep?(+d.style.getPropertyValue('--k')||1):1;d.style.setProperty('--k',k);
+    for(let n=0;n<20&&over(pg)&&k>(keep?.5:.86);n++){k=+(k-.03).toFixed(2);d.style.setProperty('--k',k)}
+    if(keep||!over(pg))return;
+    /* ខ្លឹមសារវែងពេក → បន្តទៅទំព័រទី២ */
+    const np=pg.cloneNode(false),nd=document.createElement('div');nd.className='doc';nd.style.setProperty('--k',k);np.appendChild(nd);pg.after(np);
+    while(over(pg)&&d.children.length>2)nd.insertBefore(d.lastElementChild,nd.firstChild)})}
+const honOf=m=>m.sex=='ស្រី'?'លោកស្រី':'លោក';
+const catOf=c=>c==CATS[1]?'តំណាងក្រុមប្រឹក្សាកុមារ':c==CATS[0]?'តំណាងមាតាបិតាសិស្ស':'គ្រូទទួលបន្ទុកថ្នាក់ទី '+gradeTitle(cl().grade);
+function sortedMem(){const r={'ប្រធាន':0,'អនុប្រធាន':1};
+  return cl().members.map((m,i)=>[m,i]).sort((a,b)=>((r[a[0].role]??2)-(r[b[0].role]??2))||(CATS.indexOf(a[0].cat)-CATS.indexOf(b[0].cat))||(a[1]-b[1])).map(x=>x[0])}
+function mDates(m){const p=String(m.date||'').split('-').map(Number);
+  if(p.length<3||!p[0])return{lunar:'ថ្ងៃ .......... ខែ .......... ឆ្នាំ ..........',gl:'ថ្ងៃទី ...... ខែ .......... ឆ្នាំ ........',pl:'.........., ថ្ងៃទី ...... ខែ .......... ឆ្នាំ ........'};
+  const r=khDates(p[0],p[1],p[2]),gl='ថ្ងៃទី '+kh_n(p[2])+' ខែ'+KH_SOLAR[p[1]-1]+' ឆ្នាំ'+kh_n(p[0]);
+  return{lunar:r.lunarLine,gl,pl:r.solarLine}}
+function mTime(m){const t=String(m.time||'').split(':');if(t.length<2||t[0]==='')return 'វេលាម៉ោង ........';
+  return 'វេលាម៉ោង '+kh_n(+t[0])+((+t[1])?' '+kh_n(+t[1])+'នាទី':'')}
+function docHead(){const i=S.info;
+  return `<div class="kg"><div class="moul">ព្រះរាជាណាចក្រកម្ពុជា</div><div class="moul">ជាតិ សាសនា ព្រះមហាក្សត្រ</div><div class="orn2"><i></i><b>❖</b><i></i></div></div>
+  <div class="dh"><div class="moul">${esc(i.province)}<br>${esc(i.office)}<br>${esc(i.school)}</div><div class="yrd moul">ឆ្នាំសិក្សា ${esc(i.year)}</div></div>`}
+function memList(){return `<div class="ml">${sortedMem().map((m,k)=>`<div><span>${kh(k+1)}</span><span>${honOf(m)}</span><span>${esc(m.name)}</span><span>${esc(catOf(m.cat))}</span><span>ជា${esc(m.role)}</span></div>`).join('')}</div>`}
+function docMin(m){
+  const i=S.info,d=mDates(m),mem=sortedMem(),pres=mem.find(x=>x.role=='ប្រធាន'),tch=mem.find(x=>x.cat==CATS[2]);
+  const chair=(m.chair||'').trim()||(tch?honOf(tch)+' '+tch.name:'..............................');
+  const place=m.place||i.school;
+  return `<div class="doc">${docHead()}
+  <h3>កំណត់ហេតុអង្គប្រជុំ<br>ស្ដីពីការជ្រើសរើសគណៈកម្មការគ្រប់គ្រងថ្នាក់រៀន</h3>
+  <p>${esc(d.lunar)} ត្រូវនឹង${esc(d.gl)} ${esc(mTime(m))} នៅ${esc(place)} មានបើកកិច្ចប្រជុំមួយស្ដីពីការជ្រើសរើសគណៈកម្មការគ្រប់គ្រងថ្នាក់រៀន ក្រោមការដឹកនាំរបស់ ${esc(chair)} គ្រូទទួលបន្ទុកថ្នាក់ទី ${esc(gradeTitle(cl().grade))} នៃ${esc(i.school)}។</p>
+  <p class="ni c bdy">សមាសភាពចូលរួម${m.n?' ចំនួន '+kh(m.n)+' នាក់':''} (បញ្ជីវត្តមានភ្ជាប់)</p>
+  <p class="ni c bdy">របៀបវារៈ៖ ការជ្រើសរើសគណៈកម្មការគ្រប់គ្រងថ្នាក់រៀន</p>
+  <p>ក្រោយពីសមាជិក សមាជិកាមកជួបជុំគ្នាគ្រប់គ្នាហើយ ប្រធានអង្គប្រជុំបានថ្លែងអំណរគុណដល់អស់លោក លោកស្រីទាំងអស់ដែលបានចូលរួមក្នុងការប្រជុំនេះ។ បន្ទាប់មក ប្រធានអង្គប្រជុំបានលើកបញ្ហាក្នុងរបៀបវារៈមកពិភាក្សាក្នុងអង្គប្រជុំ ដោយអានសេចក្ដីណែនាំស្ដីពីការបង្កើតគណៈកម្មការគ្រប់គ្រងសាលា និងថ្នាក់រៀនរបស់ក្រសួងអប់រំ យុវជន និងកីឡា លេខ ៤៩ អយក.សណន ចុះថ្ងៃទី ១០ ខែ កញ្ញា ឆ្នាំ ២០២១។</p>
+  <p>ប្រធានអង្គប្រជុំបានបញ្ជាក់ថា ដើម្បីឲ្យមានតម្លាភាពក្នុងការជ្រើសរើសនេះ យើងត្រូវធ្វើការបោះឆ្នោតជ្រើសរើស។ បន្ទាប់មក ប្រធានអង្គប្រជុំបានបង្គាប់ឲ្យសមាជិកដែលត្រូវបោះឆ្នោត ធ្វើការបោះឆ្នោត ហើយយកលទ្ធផលសម្លេងខ្ពស់ជាប្រធាន បន្ទាប់មកជាអនុប្រធាន និងសមាជិក ចំណែកគ្រូបន្ទុកថ្នាក់ជាលេខាធិការ។</p>
+  <p>ក្រោយពីធ្វើការបោះឆ្នោតរួច យើងទទួលបានលទ្ធផលគណៈកម្មការគ្រប់គ្រងថ្នាក់រៀន ដែលមានសមាសភាពដូចខាងក្រោម៖</p>
+  ${memList()}
+  <p>${pres?`ក្រោយពីប្រកាសសមាសភាពគណៈកម្មការគ្រប់គ្រងថ្នាក់រៀនចប់ ${honOf(pres)} ${esc(pres.name)} ប្រធានគណៈកម្មការគ្រប់គ្រងថ្នាក់ទើបជាប់ឆ្នោត បានឡើងមានប្រសាសន៍ថា “ខ្ញុំពិតជាសប្បាយចិត្តក្រៃលែង ដែលមាតាបិតាទាំងអស់នាំគ្នាបោះឆ្នោតជូនខ្ញុំ។ ខ្ញុំនឹងខិតខំប្រឹងប្រែងក្នុងតួនាទីជាគណៈកម្មការគ្រប់គ្រងថ្នាក់រៀន តាមសេចក្ដីណែនាំលេខ ៤៩ និងបន្តជួយកសាងឧបត្ថម្ភដល់ថ្នាក់រៀន។ ហើយថ្ងៃនេះដែរ ខ្ញុំសុំឲ្យមាតាបិតាទាំងអស់ចូលរួមការងារថ្នាក់រៀនរបស់កូនៗ និងតាមដានការសិក្សារបស់ពួកគាត់ជាប្រចាំផង។”`:'ក្រោយពីប្រកាសសមាសភាពគណៈកម្មការគ្រប់គ្រងថ្នាក់រៀនចប់ ប្រធានគណៈកម្មការគ្រប់គ្រងថ្នាក់ទើបជាប់ឆ្នោតបានឡើងមានប្រសាសន៍ ថ្លែងអំណរគុណ និងសុំការចូលរួមពីមាតាបិតាទាំងអស់។'}</p>
+  <p>អង្គប្រជុំបានបញ្ចប់ដោយជោគជ័យនៅវេលាថ្ងៃខែឆ្នាំដដែល ក្រោមបរិយាកាសរីករាយ និងស្និទ្ធស្នាលក្រៃលែង។</p>
+  <div style="margin-left:50%;text-align:center;margin-top:.5em"><div>${esc(d.lunar)}</div><div>${esc(d.pl)}</div><div class="moul" style="font-size:.95em">លេខាកត់ត្រា និងជាគ្រូបន្ទុកថ្នាក់</div></div></div>`}
+function docAbs(m){
+  const i=S.info,d=mDates(m),ab=String(m.absent||'').split(',').filter(Boolean),mem=sortedMem();
+  const sp=n=>{const s=String(n).trim(),k=s.indexOf(' ');return k<0?['',s]:[s.slice(0,k),s.slice(k+1)]};
+  const rows=mem.map((x,k)=>{const [a,b]=sp(x.name);
+    return `<tr><td>${kh(k+1)}</td><td>${esc(a)}</td><td>${esc(b)}</td><td>${x.sex=='ស្រី'?'ស':'ប'}</td><td>${esc(x.role)}</td><td></td><td>${esc(x.phone||'')}</td><td>${ab.includes(String(x.id))?'អវត្តមាន':''}</td></tr>`}).join('')
+    +'<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>'.repeat(2);
+  return `<div class="doc"><div class="kg"><div class="moul">ព្រះរាជាណាចក្រកម្ពុជា</div><div class="moul">ជាតិ សាសនា ព្រះមហាក្សត្រ</div><div class="orn2"><i></i><b>❖</b><i></i></div></div>
+  <div class="dh"><div class="moul">${esc(i.office)}<br>${esc(i.school)}</div><div class="yrd moul"></div></div>
+  <div class="ut">បញ្ជីឈ្មោះវត្តមានគណៈគ្រប់គ្រងថ្នាក់រៀន (ថ្នាក់ទី ${esc(gradeTitle(cl().grade))})</div>
+  <table class="at"><thead><tr><th style="width:5%">ល.រ</th><th style="width:15%">គោត្តនាម</th><th style="width:15%">នាម</th><th style="width:6%">ភេទ</th><th style="width:16%">តួនាទី/ភារកិច្ច</th><th style="width:17%">ហត្ថលេខា</th><th style="width:15%">លេខទូរសព្ទ</th><th style="width:11%">ផ្សេងៗ</th></tr></thead><tbody>${rows}</tbody></table>
+  <div class="sg2"><div><div class="b">បានឃើញ និងឯកភាព</div><div class="b">នាយក</div></div>
+  <div><div>${esc(d.lunar)}</div><div>ត្រូវនឹង${esc(d.gl)}</div><div class="b">អ្នកស្រង់វត្តមាន</div></div></div></div>`}
+function docReq(m){
+  const i=S.info,d=mDates(m),n=cl().members.length,g=gradeTitle(cl().grade);
+  return `<div class="doc">${docHead()}
+  <div class="c bdy">គ្រូប្រចាំថ្នាក់ទី ${esc(g)} នៃ${esc(i.school)}</div>
+  <div class="c bdy" style="margin-top:.3em">សូមគោរពជូន</div>
+  <div class="c bdy">គណៈកម្មការគ្រប់គ្រងសាលា និងនាយកសាលា</div>
+  <p class="ni" style="margin-top:.5em"><b><i>កម្មវត្ថុ៖</i></b> សំណើសុំទទួលស្គាល់សមាសភាពគណៈកម្មការគ្រប់គ្រងថ្នាក់រៀនទី ${esc(g)} ។</p>
+  <p class="ni"><b><i>យោង៖</i></b> កំណត់ហេតុអង្គប្រជុំការបោះឆ្នោតជ្រើសរើសគណៈកម្មការគ្រប់គ្រងថ្នាក់រៀន ${esc(d.lunar)} ត្រូវនឹង${esc(d.gl)} ។</p>
+  <p>តបតាមកម្មវត្ថុ និងយោងខាងលើ ខ្ញុំបាទសូមគោរពជម្រាបជូនគណៈកម្មការគ្រប់គ្រងសាលា និងនាយកសាលាមេត្តាជ្រាបថា៖ ថ្នាក់ទី ${esc(g)} នៃ${esc(i.school)} បានរៀបចំការប្រជុំដោយមានការចូលរួមពីអាជ្ញាធរ មាតាបិតា សហគមន៍ លោកគ្រូ អ្នកគ្រូ ហើយត្រូវបានបោះឆ្នោតជ្រើសរើសគណៈកម្មការគ្រប់គ្រងថ្នាក់រៀន ដែលមានសមាសភាពដូចខាងក្រោម៖</p>
+  ${memList()}
+  <p>អាស្រ័យដូចបានជម្រាបជូនខាងលើ សូមលោកមេត្តាពិនិត្យលទ្ធភាព សម្រួល និងស្នើសេចក្ដីប្រកាសទទួលស្គាល់គណៈកម្មការគ្រប់គ្រងថ្នាក់រៀនទាំង ${kh(n)} រូប ដោយអនុគ្រោះ។</p>
+  <p class="c ni bdy">សូមលោកប្រធានគណៈកម្មការគ្រប់គ្រងសាលារៀន មេត្តាទទួលនូវសេចក្ដីគោរពរាប់អានអំពីនាងខ្ញុំ / ខ្ញុំបាទ។</p>
+  <div style="margin-left:50%;text-align:center"><div>${esc(d.lunar)}</div><div>${esc(d.pl)}</div></div>
+  <div class="sg2"><div><div class="b">បានឃើញ និងពិនិត្យត្រឹមត្រូវ</div><div class="b">នាយកសាលា</div></div><div><div class="it">គ្រូទទួលបន្ទុកថ្នាក់</div></div></div>
+  <div class="sp"></div>
+  <div class="c"><div class="b moul" style="font-size:.92em">បានឃើញ និងឯកភាព</div><div class="moul" style="font-size:.92em">ប្រធានគណៈកម្មការគ្រប់គ្រងសាលា</div></div></div>`}
+function vDoc(){
+  const m=cl().meetings.find(x=>x.id==editing.id);if(!m){editing=null;return vMeet()}
+  const k=editing.k,nm={min:'កំណត់ហេតុ',abs:'សម្រង់អវត្តមាន',req:'សំណើទទួលស្គាល់គគថ'}[k];
+  const fn='kkt-'+k+'-'+String(cl().grade).replace(/[^\w-]/g,'')+'-'+(m.date||'')+'.pdf';
+  return `<div class="bookbar panel"><div class="row" style="justify-content:flex-start"><button data-a="docBack">← ត្រឡប់ទៅកិច្ចប្រជុំ</button><b>${nm} · ${fmtDate(m.date)}</b>
+  ${DL?`<button class="pri" data-a="pdf" data-fn="${fn}">រក្សាជា PDF</button>`:''}</div>
+  ${DL?'':`<p class="note" style="margin:6px 0 0">រក្សាទុកជា PDF៖ ចុច Ctrl+P ជ្រើស «Save as PDF» ហើយបើក «Background graphics»។</p>`}
+  <p class="note" style="margin:6px 0 0">ត្រូវការកែព័ត៌មាន (ម៉ោង, ទីកន្លែង, ប្រធានអង្គប្រជុំ, អវត្តមាន)? ត្រឡប់ទៅកិច្ចប្រជុំ → កែប្រែ។ ខ្លឹមសារនឹងប្ដូរស្វ័យប្រវត្តិ។</p></div>
+  <div class="pages"><div class="dw"><section class="pg docpg">${k=='min'?docMin(m):k=='abs'?docAbs(m):docReq(m)}</section></div></div>`}
 function vMeet(){
+  if(editing&&editing.t=='doc')return vDoc();
   if(editing&&editing.t=='e')return meetForm(editing.o);
   const l=[...cl().meetings].sort((a,b)=>b.date.localeCompare(a.date));
   return `<div class="row"><h2>កំណត់ហេតុកិច្ចប្រជុំ</h2><button class="pri" data-a="newMeet">+ កិច្ចប្រជុំថ្មី</button></div>
   <section class="panel">${l.map(m=>`<div class="meet"><div class="row"><b>${esc(m.topic)}</b><span><span class="tag g">${fmtDate(m.date)}</span> ${m.n?`<span class="tag">${kh(m.n)} នាក់</span>`:''}</span></div>
     ${m.notes?`<p>${esc(m.notes)}</p>`:''}${m.decision?`<p><b>សេចក្ដីសម្រេច៖</b> ${esc(m.decision)}</p>`:''}
-    <div class="row" style="justify-content:flex-start"><button class="sm" data-a="editMeet" data-id="${m.id}">កែប្រែ</button><button class="sm dng" data-a="delMeet" data-id="${m.id}">${confirmId=='e'+m.id?'ចុចម្ដងទៀតដើម្បីលុប':'លុប'}</button></div></div>`).join('')||'<div class="empty">មិនទាន់មានកិច្ចប្រជុំ។ ចុច «កិច្ចប្រជុំថ្មី» ដើម្បីចាប់ផ្ដើម។</div>'}</section>`;
+    <div class="row" style="justify-content:flex-start"><button class="sm" data-a="doc" data-k="min" data-id="${m.id}">📄 កំណត់ហេតុ</button><button class="sm" data-a="doc" data-k="abs" data-id="${m.id}">📋 សម្រង់អវត្តមាន</button><button class="sm" data-a="doc" data-k="req" data-id="${m.id}">✉ សំណើទទួលស្គាល់ គគថ</button><button class="sm" data-a="editMeet" data-id="${m.id}">កែប្រែ</button><button class="sm dng" data-a="delMeet" data-id="${m.id}">${confirmId=='e'+m.id?'ចុចម្ដងទៀតដើម្បីលុប':'លុប'}</button></div></div>`).join('')||'<div class="empty">មិនទាន់មានកិច្ចប្រជុំ។ ចុច «កិច្ចប្រជុំថ្មី» ដើម្បីចាប់ផ្ដើម។</div>'}</section>`;
 }
 
 function vData(){
@@ -498,15 +602,17 @@ async function savePdf(btn){
   try{
     await document.fonts.ready;
     const pdf=new jspdf.jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
-    const pages=[...document.querySelectorAll('.pages .pg')];
+    const isDoc=editing&&editing.t=='doc';let pages;
+    if(isDoc){const mm=cl().meetings.find(x=>x.id==editing.id);box.innerHTML='<section class="pg docpg pgx">'+({min:docMin,abs:docAbs,req:docReq})[editing.k](mm)+'</section>';fitPages(box);pages=[...box.querySelectorAll('.pg')]}
+    else pages=[...document.querySelectorAll('.pages .pg')];
     for(let k=0;k<pages.length;k++){
-      const c=pages[k].cloneNode(true);c.classList.add('pgx');box.innerHTML='';box.appendChild(c);
+      let c=pages[k];if(!isDoc){c=pages[k].cloneNode(true);c.classList.add('pgx');box.innerHTML='';box.appendChild(c)}
       await new Promise(r=>setTimeout(r,60));
       const cv=await html2canvas(c,{scale:2,backgroundColor:'#ffffff',useCORS:true});
       if(k)pdf.addPage();
       pdf.addImage(cv.toDataURL('image/jpeg',.92),'JPEG',0,0,210,297);
     }
-    await DL.save({filename:'kkt-'+String(cl().grade).replace(/[^\w-]/g,'')+'.pdf',data:pdf.output('blob')});
+    await DL.save({filename:btn.dataset.fn||('kkt-'+String(cl().grade).replace(/[^\w-]/g,'')+'.pdf'),data:pdf.output('blob')});
     toast('បានរក្សាទុក PDF');
   }catch(e){toast(e&&e.code=='declined'?'បានបោះបង់':'បង្កើត PDF មិនបានសម្រេច')}
   finally{box.remove();btn.disabled=false;btn.textContent=old}
@@ -514,6 +620,7 @@ async function savePdf(btn){
 function render(){
   head();
   document.getElementById('app').innerHTML=({home:vHome,members:vMembers,plan:vPlan,meetings:vMeet,book:vBook,data:vData})[tab]();
+  if(tab=='meetings'&&editing&&editing.t=='doc'){fitPages(document);if(document.fonts&&!editing._fr){editing._fr=1;document.fonts.ready.then(()=>{if(editing&&editing.t=='doc')render()})}}
 }
 function route(){const h=location.hash.slice(1);tab=TABS.some(t=>t[0]==h)?h:'home';editing=null;confirmId=null;render();scrollTo(0,0)}
 addEventListener('hashchange',route);
@@ -538,7 +645,8 @@ document.addEventListener('click',e=>{
   else if(a=='editMem'){editing={t:'m',o:cl().members.find(x=>x.id==id)}}
   else if(a=='newMeet'){editing={t:'e',o:{}}}
   else if(a=='editMeet'){editing={t:'e',o:cl().meetings.find(x=>x.id==id)}}
-  else if(a=='cancel'){editing=null}
+  else if(a=='cancel'||a=='docBack'){editing=null}
+  else if(a=='doc'){editing={t:'doc',k:b.dataset.k,id}}
   else if(a=='cell'){const x=cl().acts.find(q=>q.id==id),i=b.dataset.i;x.c[i]=((x.c[i]||0)+1)%3;save()}
   else if(a=='delMem'||a=='delAct'||a=='delMeet'||a=='reset'){
     const k=a=='delMem'?'m'+id:a=='delAct'?'a'+id:a=='delMeet'?'e'+id:'reset';
@@ -574,7 +682,7 @@ document.addEventListener('submit',e=>{
     if(f.dataset.id)Object.assign(cl().members.find(x=>x.id==f.dataset.id),o);else cl().members.push({id:nid(cl().members),...o});
     editing=null;save();toast('បានរក្សាទុក');render();return}
   if(f.id=='meetForm'){
-    const o={date:d.date,n:parseInt(en(d.n))||'',topic:d.topic.trim(),notes:d.notes,decision:d.decision};
+    const o={date:d.date,n:parseInt(en(d.n))||'',time:d.time||'',place:(d.place||'').trim(),chair:(d.chair||'').trim(),absent:new FormData(f).getAll('absent').join(','),topic:d.topic.trim(),notes:d.notes,decision:d.decision};
     if(f.dataset.id)Object.assign(cl().meetings.find(x=>x.id==f.dataset.id),o);else cl().meetings.push({id:nid(cl().meetings),...o});
     editing=null;save();toast('បានរក្សាទុក');render();return}
   if(f.id=='actForm'){cl().acts.push({id:nid(cl().acts),t:d.t.trim(),c:{}});save();render();return}

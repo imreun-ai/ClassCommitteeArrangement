@@ -31,6 +31,7 @@ function doPost(e) {
     const b = JSON.parse(e.postData.contents);
     if (b.action !== 'save' || !b.state) return out_({ ok: false, error: 'bad request' });
     write_(b.state, b.photos || null);
+    if (b.docs) writeDocs_(b.docs);
     return out_({ ok: true, saved: new Date().toISOString() });
   } catch (x) { return out_({ ok: false, error: String(x) }); }
   finally { try { lock.releaseLock(); } catch (y) {} }
@@ -160,4 +161,35 @@ function read_() {
     c.acts.push(a);
   });
   return { v: 3, info: info, cur: classes[0].id, classes: classes };
+}
+
+/* ---------- ឯកសារ ១-៣ ជាតារាងអានបាន (កំណត់ហេតុ · សម្រង់អវត្តមាន · សំណើទទួលស្គាល់គគថ) ---------- */
+const DOC_NAMES = { min: '១-កំណត់ហេតុ', abs: '២-សម្រង់អវត្តមាន', req: '៣-សំណើទទួលស្គាល់គគថ' };
+function writeDocs_(docs) {                       // docs = { "<ថ្នាក់>": { min: [[..]], abs: [[..]], req: [[..]] } }
+  const keep = {};
+  Object.keys(docs).forEach(g => Object.keys(DOC_NAMES).forEach(k => {
+    const name = (DOC_NAMES[k] + ' ' + g).replace(/[\[\]\*\?:\/\\]/g, '-').slice(0, 99);
+    keep[name] = 1;
+    raw_(name, docs[g][k] || []);
+  }));
+  const ss = ss_();
+  ss.getSheets().forEach(s => {                    // លុប Sheet ឯកសារនៃថ្នាក់ដែលលែងមាន
+    const n = s.getName();
+    if (!keep[n] && Object.keys(DOC_NAMES).some(k => n.indexOf(DOC_NAMES[k] + ' ') === 0) && ss.getSheets().length > 1) ss.deleteSheet(s);
+  });
+}
+function raw_(name, rows) {
+  const sh = sheet_(name), W = 8;
+  sh.clear();
+  try { sh.getRange(1, 1, Math.max(sh.getMaxRows(), 1), sh.getMaxColumns()).breakApart(); } catch (e) {}
+  if (!rows.length) return;
+  rows = rows.map(r => { r = r.slice(0, W).map(v => v == null ? '' : String(v)); while (r.length < W) r.push(''); return r; });
+  sh.getRange(1, 1, rows.length, W).setNumberFormat('@').setValues(rows).setVerticalAlignment('top');
+  for (let c = 1; c <= W; c++) sh.setColumnWidth(c, c === 1 ? 80 : 125);
+  rows.forEach((r, i) => {
+    if (r.slice(1).every(v => v === '') && r[0] !== '') {   // ប្រយោគវែង → បញ្ចូលគ្នាទូទាំងជួរ ហើយរុំអក្សរ
+      sh.getRange(i + 1, 1, 1, W).merge().setWrap(true);
+      sh.setRowHeight(i + 1, Math.max(21, Math.ceil(r[0].length / 75) * 21));
+    }
+  });
 }

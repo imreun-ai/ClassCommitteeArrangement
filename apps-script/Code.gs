@@ -6,7 +6,7 @@
  */
 const SHEET_ID = '1PwnCl_EXaIKbP3k6KD90WKxzfrJeIbhX23RPX8YIGao';
 const S_INFO = 'ព័ត៌មានទូទៅ', S_CLS = 'បញ្ជីថ្នាក់', S_MEM = 'សមាជិក',
-      S_PLAN = 'ផែនការប្រចាំឆ្នាំ', S_MEET = 'កិច្ចប្រជុំ', S_PHOTO = '_រូបថត';
+      S_PLAN = 'ផែនការប្រចាំឆ្នាំ', S_MEET = 'កិច្ចប្រជុំ', S_PHOTO = '_រូបថត', S_DOC = 'ឯកសារកិច្ចប្រជុំ';
 const CHUNK = 40000;
 const LBL = {name:'ឈ្មោះ', sex:'ភេទ', age:'អាយុ', cat:'ប្រភេទ', role:'តួនាទី', job:'មុខរបរ', task:'ភារកិច្ច',
              date:'កាលបរិច្ឆេទ', place:'ទីកន្លែង', topic:'ប្រធានបទ', notes:'កំណត់ចំណាំ', decision:'សេចក្តីសម្រេច', time:'ម៉ោង', chair:'ប្រធានអង្គប្រជុំ', absent:'អវត្តមាន (លេខកូដសមាជិក)', n:'ចំនួនអ្នកចូលរួម'};
@@ -55,6 +55,11 @@ function write_(S, photos) {
     plan.push(r);
   }));
   put_(S_PLAN, head, plan);
+
+  const drows = [];                                  // ឯកសារ ១-៣ (កំណត់ហេតុ · អវត្តមាន · សំណើ) ដែលអ្នកប្រើកែ
+  cls.forEach(c => { const d = c.docs || {};
+    Object.keys(d).forEach(k => Object.keys(d[k] || {}).forEach(f => drows.push([c.grade, c.id, k, f, d[k][f]]))); });
+  put_(S_DOC, ['ថ្នាក់', 'លេខថ្នាក់', 'ឯកសារ (min/abs/req)', 'វាល', 'តម្លៃ'], drows);
 
   if (photos) {                                     // សរសេររូបថតតែពេលមានការប្ដូរ
     const rows = [];
@@ -139,6 +144,11 @@ function read_() {
     });
   });
 
+  const dt = tbl_(S_DOC);
+  if (dt) dt.rows.forEach(r => {
+    const c = find(r); if (!c || r[2] === '' || r[3] === '') return;
+    c.docs = c.docs || {}; (c.docs[r[2]] = c.docs[r[2]] || {})[r[3]] = r[4];
+  });
   const pl = tbl_(S_PLAN);
   if (pl) pl.rows.forEach(r => {
     const c = find(r); if (!c || r[3] === '') return;

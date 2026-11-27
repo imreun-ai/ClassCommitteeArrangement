@@ -1,4 +1,4 @@
-<title>ប្រព័ន្ធ គគថ</title>
+<title>ប្រព័ន្ធរៀបចំគណៈកម្មការថ្នាក់រៀន (គគថ)</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Moul&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap">
 <style>
@@ -182,7 +182,7 @@ td.act{text-align:left;min-width:260px}
 <header><div class="in hd"><img id="hLogo" alt="" hidden>
   <div>
   <small>ព្រះរាជាណាចក្រកម្ពុជា · ជាតិ សាសនា ព្រះមហាក្សត្រ</small>
-  <h1 id="hTitle">សៀវភៅគណៈគ្រប់គ្រងថ្នាក់រៀន (គគថ)</h1>
+  <h1 id="hTitle">ប្រព័ន្ធរៀបចំគណៈកម្មការថ្នាក់រៀន (គគថ)</h1>
   <small id="hSub"></small>
   <div class="hcls"><label>ថ្នាក់៖ <select id="clsSel"></select></label><span id="gsBadge" class="fsb"></span></div>
 </div></div></header>
@@ -347,7 +347,7 @@ function head(){
   const i=S.info;
   document.getElementById('hTitle').textContent='សៀវភៅគណៈគ្រប់គ្រងថ្នាក់រៀន (គគថ) ថ្នាក់ទី '+kh(cl().grade);
   document.getElementById('hSub').textContent=i.school+' · ឆ្នាំសិក្សា '+i.year;
-  document.title='ប្រព័ន្ធ គគថ '+cl().grade;const lg=document.getElementById('hLogo');lg.hidden=!i.logo;if(i.logo)lg.src=i.logo;
+  document.title='ប្រព័ន្ធរៀបចំគណៈកម្មការថ្នាក់រៀន (គគថ) · '+cl().grade;const lg=document.getElementById('hLogo');lg.hidden=!i.logo;if(i.logo)lg.src=i.logo;
   const sel=document.getElementById('clsSel');if(sel)sel.innerHTML=S.classes.map(c=>`<option value="${c.id}" ${c.id==cl().id?'selected':''}>ថ្នាក់ទី ${esc(c.grade)}</option>`).join('');
   document.getElementById('nav').innerHTML=TABS.map(([k,l])=>`<a href="#${k}" ${k==tab?'aria-current="page"':''}>${l}</a>`).join('');
 }

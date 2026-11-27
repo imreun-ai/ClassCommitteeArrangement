@@ -517,12 +517,12 @@ function vDoc(){
   <div class="pages"><div class="dw"><section class="pg docpg">${k=='min'?docMin(m):k=='abs'?docAbs(m):docReq(m)}</section></div></div>`}
 let docMeet=null;
 function docsInline(l){
-  if(!l.length)return '';
-  const m=l.find(x=>x.id==docMeet)||l[0];
+  const none=!l.length,m=none?{}:(l.find(x=>x.id==docMeet)||l[0]);
   return `<section class="panel"><div class="row"><h2>ឯកសារកិច្ចប្រជុំ (តារាងទាំង ៣)</h2>
-    <label style="display:flex;gap:6px;align-items:center;flex-direction:row">កិច្ចប្រជុំ៖ <select id="docSel">${l.map(x=>`<option value="${x.id}" ${x.id==m.id?'selected':''}>${fmtDate(x.date)} — ${esc(x.topic)}</option>`).join('')}</select></label></div>
-    <div class="row" style="justify-content:flex-start;margin:8px 0">${DL?`<button class="pri" data-a="pdf" data-all="1" data-id="${m.id}" data-fn="kkt-meeting-${String(cl().grade).replace(/[^\w-]/g,'')}-${m.date||''}.pdf">រក្សាទាំង ៣ ជា PDF</button>`:''}
-    <button data-a="editMeet" data-id="${m.id}">កែព័ត៌មានកិច្ចប្រជុំ (ម៉ោង, ទីកន្លែង, អវត្តមាន)</button></div>
+    ${none?'':`<label style="display:flex;gap:6px;align-items:center;flex-direction:row">កិច្ចប្រជុំ៖ <select id="docSel">${l.map(x=>`<option value="${x.id}" ${x.id==m.id?'selected':''}>${fmtDate(x.date)} — ${esc(x.topic)}</option>`).join('')}</select></label>`}</div>
+    ${none?'<p class="note" style="margin:0 0 8px;color:var(--warn)">មិនទាន់មានកិច្ចប្រជុំ — កំពុងបង្ហាញគំរូទទេ (កាលបរិច្ឆេទជាចំណុច)។ ចុច «+ កិច្ចប្រជុំថ្មី» ដើម្បីបំពេញកាលបរិច្ឆេទ ម៉ោង និងអវត្តមាន។ បញ្ជីសមាជិកបំពេញស្វ័យប្រវត្តិរួចហើយ។</p>':''}
+    <div class="row" style="justify-content:flex-start;margin:8px 0">${DL?`<button class="pri" data-a="pdf" data-all="1" data-id="${m.id||0}" data-fn="kkt-meeting-${String(cl().grade).replace(/[^\w-]/g,'')}-${m.date||''}.pdf">រក្សាទាំង ៣ ជា PDF</button>`:''}
+    ${none?'<button data-a="newMeet">+ កិច្ចប្រជុំថ្មី</button>':`<button data-a="editMeet" data-id="${m.id}">កែព័ត៌មានកិច្ចប្រជុំ (ម៉ោង, ទីកន្លែង, អវត្តមាន)</button>`}</div>
     ${DL?'':'<p class="note" style="margin:0 0 8px">រក្សាទុកជា PDF៖ ចុច Ctrl+P ជ្រើស «Save as PDF» ហើយបើក «Background graphics» (នឹងបោះពុម្ពឯកសារទាំង ៣ ជាប់គ្នា)។</p>'}
     <p class="note" style="margin:0 0 8px">១) កំណត់ហេតុ · ២) សម្រង់អវត្តមាន · ៣) សំណើទទួលស្គាល់ គគថ — បំពេញស្វ័យប្រវត្តិពីសមាជិក និងកិច្ចប្រជុំនេះ។</p>
     <div class="pages">${[docMin,docAbs,docReq].map(fn=>`<div class="dw"><section class="pg docpg">${fn(m)}</section></div>`).join('')}</div></section>`}
@@ -614,7 +614,7 @@ async function savePdf(btn){
     await document.fonts.ready;
     const pdf=new jspdf.jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
     const isDoc=(editing&&editing.t=='doc')||btn.dataset.all;let pages;
-    if(isDoc){const mm=cl().meetings.find(x=>x.id==(btn.dataset.all?+btn.dataset.id:editing.id));const fns=btn.dataset.all?[docMin,docAbs,docReq]:[({min:docMin,abs:docAbs,req:docReq})[editing.k]];box.innerHTML=fns.map(fn=>'<section class="pg docpg pgx">'+fn(mm)+'</section>').join('');fitPages(box);pages=[...box.querySelectorAll('.pg')]}
+    if(isDoc){const mm=cl().meetings.find(x=>x.id==(btn.dataset.all?+btn.dataset.id:editing.id))||{};const fns=btn.dataset.all?[docMin,docAbs,docReq]:[({min:docMin,abs:docAbs,req:docReq})[editing.k]];box.innerHTML=fns.map(fn=>'<section class="pg docpg pgx">'+fn(mm)+'</section>').join('');fitPages(box);pages=[...box.querySelectorAll('.pg')]}
     else pages=[...document.querySelectorAll('.pages .pg')];
     for(let k=0;k<pages.length;k++){
       let c=pages[k];if(!isDoc){c=pages[k].cloneNode(true);c.classList.add('pgx');box.innerHTML='';box.appendChild(c)}

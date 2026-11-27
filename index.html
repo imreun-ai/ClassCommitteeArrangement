@@ -515,6 +515,17 @@ function vDoc(){
   ${DL?'':`<p class="note" style="margin:6px 0 0">រក្សាទុកជា PDF៖ ចុច Ctrl+P ជ្រើស «Save as PDF» ហើយបើក «Background graphics»។</p>`}
   <p class="note" style="margin:6px 0 0">ត្រូវការកែព័ត៌មាន (ម៉ោង, ទីកន្លែង, ប្រធានអង្គប្រជុំ, អវត្តមាន)? ត្រឡប់ទៅកិច្ចប្រជុំ → កែប្រែ។ ខ្លឹមសារនឹងប្ដូរស្វ័យប្រវត្តិ។</p></div>
   <div class="pages"><div class="dw"><section class="pg docpg">${k=='min'?docMin(m):k=='abs'?docAbs(m):docReq(m)}</section></div></div>`}
+let docMeet=null;
+function docsInline(l){
+  if(!l.length)return '';
+  const m=l.find(x=>x.id==docMeet)||l[0];
+  return `<section class="panel"><div class="row"><h2>ឯកសារកិច្ចប្រជុំ (តារាងទាំង ៣)</h2>
+    <label style="display:flex;gap:6px;align-items:center;flex-direction:row">កិច្ចប្រជុំ៖ <select id="docSel">${l.map(x=>`<option value="${x.id}" ${x.id==m.id?'selected':''}>${fmtDate(x.date)} — ${esc(x.topic)}</option>`).join('')}</select></label></div>
+    <div class="row" style="justify-content:flex-start;margin:8px 0">${DL?`<button class="pri" data-a="pdf" data-all="1" data-id="${m.id}" data-fn="kkt-meeting-${String(cl().grade).replace(/[^\w-]/g,'')}-${m.date||''}.pdf">រក្សាទាំង ៣ ជា PDF</button>`:''}
+    <button data-a="editMeet" data-id="${m.id}">កែព័ត៌មានកិច្ចប្រជុំ (ម៉ោង, ទីកន្លែង, អវត្តមាន)</button></div>
+    ${DL?'':'<p class="note" style="margin:0 0 8px">រក្សាទុកជា PDF៖ ចុច Ctrl+P ជ្រើស «Save as PDF» ហើយបើក «Background graphics» (នឹងបោះពុម្ពឯកសារទាំង ៣ ជាប់គ្នា)។</p>'}
+    <p class="note" style="margin:0 0 8px">១) កំណត់ហេតុ · ២) សម្រង់អវត្តមាន · ៣) សំណើទទួលស្គាល់ គគថ — បំពេញស្វ័យប្រវត្តិពីសមាជិក និងកិច្ចប្រជុំនេះ។</p>
+    <div class="pages">${[docMin,docAbs,docReq].map(fn=>`<div class="dw"><section class="pg docpg">${fn(m)}</section></div>`).join('')}</div></section>`}
 function vMeet(){
   if(editing&&editing.t=='doc')return vDoc();
   if(editing&&editing.t=='e')return meetForm(editing.o);
@@ -522,7 +533,7 @@ function vMeet(){
   return `<div class="row"><h2>កំណត់ហេតុកិច្ចប្រជុំ</h2><button class="pri" data-a="newMeet">+ កិច្ចប្រជុំថ្មី</button></div>
   <section class="panel">${l.map(m=>`<div class="meet"><div class="row"><b>${esc(m.topic)}</b><span><span class="tag g">${fmtDate(m.date)}</span> ${m.n?`<span class="tag">${kh(m.n)} នាក់</span>`:''}</span></div>
     ${m.notes?`<p>${esc(m.notes)}</p>`:''}${m.decision?`<p><b>សេចក្ដីសម្រេច៖</b> ${esc(m.decision)}</p>`:''}
-    <div class="row" style="justify-content:flex-start"><button class="sm" data-a="doc" data-k="min" data-id="${m.id}">📄 កំណត់ហេតុ</button><button class="sm" data-a="doc" data-k="abs" data-id="${m.id}">📋 សម្រង់អវត្តមាន</button><button class="sm" data-a="doc" data-k="req" data-id="${m.id}">✉ សំណើទទួលស្គាល់ គគថ</button><button class="sm" data-a="editMeet" data-id="${m.id}">កែប្រែ</button><button class="sm dng" data-a="delMeet" data-id="${m.id}">${confirmId=='e'+m.id?'ចុចម្ដងទៀតដើម្បីលុប':'លុប'}</button></div></div>`).join('')||'<div class="empty">មិនទាន់មានកិច្ចប្រជុំ។ ចុច «កិច្ចប្រជុំថ្មី» ដើម្បីចាប់ផ្ដើម។</div>'}</section>`;
+    <div class="row" style="justify-content:flex-start"><button class="sm" data-a="doc" data-k="min" data-id="${m.id}">📄 កំណត់ហេតុ</button><button class="sm" data-a="doc" data-k="abs" data-id="${m.id}">📋 សម្រង់អវត្តមាន</button><button class="sm" data-a="doc" data-k="req" data-id="${m.id}">✉ សំណើទទួលស្គាល់ គគថ</button><button class="sm" data-a="editMeet" data-id="${m.id}">កែប្រែ</button><button class="sm dng" data-a="delMeet" data-id="${m.id}">${confirmId=='e'+m.id?'ចុចម្ដងទៀតដើម្បីលុប':'លុប'}</button></div></div>`).join('')||'<div class="empty">មិនទាន់មានកិច្ចប្រជុំ។ ចុច «កិច្ចប្រជុំថ្មី» ដើម្បីចាប់ផ្ដើម។</div>'}</section>${docsInline(l)}`
 }
 
 function vData(){
@@ -602,8 +613,8 @@ async function savePdf(btn){
   try{
     await document.fonts.ready;
     const pdf=new jspdf.jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
-    const isDoc=editing&&editing.t=='doc';let pages;
-    if(isDoc){const mm=cl().meetings.find(x=>x.id==editing.id);box.innerHTML='<section class="pg docpg pgx">'+({min:docMin,abs:docAbs,req:docReq})[editing.k](mm)+'</section>';fitPages(box);pages=[...box.querySelectorAll('.pg')]}
+    const isDoc=(editing&&editing.t=='doc')||btn.dataset.all;let pages;
+    if(isDoc){const mm=cl().meetings.find(x=>x.id==(btn.dataset.all?+btn.dataset.id:editing.id));const fns=btn.dataset.all?[docMin,docAbs,docReq]:[({min:docMin,abs:docAbs,req:docReq})[editing.k]];box.innerHTML=fns.map(fn=>'<section class="pg docpg pgx">'+fn(mm)+'</section>').join('');fitPages(box);pages=[...box.querySelectorAll('.pg')]}
     else pages=[...document.querySelectorAll('.pages .pg')];
     for(let k=0;k<pages.length;k++){
       let c=pages[k];if(!isDoc){c=pages[k].cloneNode(true);c.classList.add('pgx');box.innerHTML='';box.appendChild(c)}
@@ -620,7 +631,7 @@ async function savePdf(btn){
 function render(){
   head();
   document.getElementById('app').innerHTML=({home:vHome,members:vMembers,plan:vPlan,meetings:vMeet,book:vBook,data:vData})[tab]();
-  if(tab=='meetings'&&editing&&editing.t=='doc'){fitPages(document);if(document.fonts&&!editing._fr){editing._fr=1;document.fonts.ready.then(()=>{if(editing&&editing.t=='doc')render()})}}
+  if(tab=='meetings'&&(editing&&editing.t=='doc'||!editing)){fitPages(document);if(document.fonts&&!window._frd){window._frd=1;document.fonts.ready.then(()=>{if(tab=='meetings'&&(!editing||editing.t=='doc'))render()})}}
 }
 function route(){const h=location.hash.slice(1);tab=TABS.some(t=>t[0]==h)?h:'home';editing=null;confirmId=null;render();scrollTo(0,0)}
 addEventListener('hashchange',route);
@@ -698,6 +709,7 @@ function fillDates(){
 }
 document.addEventListener('input',e=>{if(e.target.id=='signG'||e.target.id=='fPlace')fillDates()});
 document.addEventListener('change',e=>{
+  if(e.target.id=='docSel'){docMeet=+e.target.value;render();return}
   if(e.target.id=='clsSel'){S.cur=+e.target.value;persist();editing=null;confirmId=null;render();return}
   if(e.target.id=='taskSel'){document.getElementById('taskOtherL').hidden=e.target.value!='ផ្សេងៗ'}
   if(e.target.id=='jobSel'){document.getElementById('jobOtherL').hidden=e.target.value!='ផ្សេងៗ'}
